@@ -37,21 +37,34 @@
   async function getServices(){
     const {data,error}=await client.from('services').select('id,name,category,description,price,active');
     if(error) throw error;
-    return (data||[]).sort((a,b)=>String(a.name||'').localeCompare(String(b.name||''),'pt-BR'));
+    return (data||[]).sort((a,b)=>String(a.category||'').localeCompare(String(b.category||''),'pt-BR')||String(a.name||'').localeCompare(String(b.name||''),'pt-BR'));
   }
   async function renderServices(){
     const c=$('content'); c.innerHTML='<div class="card"><h3>Serviços</h3><p>Carregando...</p></div>';
     try{
       services=await getServices();
-      c.innerHTML='<div class="card"><div class="card-head"><div><h3>Serviços</h3><p>Gerencie o que aparece no site da cliente.</p></div><button class="primary" type="button" id="newService">+ Novo serviço</button></div><div class="toolbar"><input id="serviceSearch" placeholder="Buscar serviço..."></div><div id="serviceList"></div></div>';
+      c.innerHTML='<div class="card"><div class="card-head"><div><h3>Serviços</h3><p>Gerencie tudo o que aparece no site da cliente.</p></div><button class="primary" type="button" id="newService">+ Novo serviço</button></div><div class="toolbar"><input id="serviceSearch" placeholder="Buscar serviço..."></div><div id="serviceList"></div></div>';
       $('newService').onclick=()=>openServiceForm(null); $('serviceSearch').oninput=filterServices; drawServices(services);
     }catch(e){c.innerHTML='<div class="card"><h3>Serviços</h3><p class="error">Não foi possível carregar os serviços: '+escapeHtml(e.message)+'</p></div>';}
   }
   function drawServices(list){
-    $('serviceList').innerHTML=list.length?list.map(s=>'<div class="service"><div><strong>'+escapeHtml(s.name)+'</strong><div class="empty">'+escapeHtml(s.category||'')+'</div></div><div class="price">R$ '+Number(s.price||0).toFixed(2).replace('.',',')+'</div><div class="badge '+(s.active?'':'off')+'">'+(s.active?'Visível':'Oculto')+'</div><div><button class="action" type="button" data-edit="'+escapeHtml(s.id)+'">Editar</button></div></div>').join(''):'<p class="empty">Nenhum serviço encontrado.</p>';
+    $('serviceList').innerHTML=list.length?list.map(s=>'<div class="service"><div class="service-main"><strong>'+escapeHtml(s.name)+'</strong><div class="empty">'+escapeHtml(s.category||'Sem categoria')+'</div></div><div class="price">R$ '+Number(s.price||0).toFixed(2).replace('.',',')+'</div><button class="badge '+(s.active?'':'off')+'" type="button" data-toggle="'+escapeHtml(s.id)+'">'+(s.active?'Visível':'Oculto')+'</button><div class="actions"><button class="action" type="button" data-edit="'+escapeHtml(s.id)+'">Editar</button><button class="action danger" type="button" data-delete="'+escapeHtml(s.id)+'">Excluir</button></div></div>').join(''):'<p class="empty">Nenhum serviço encontrado.</p>';
     $('serviceList').querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>openServiceForm(b.dataset.edit));
+    $('serviceList').querySelectorAll('[data-toggle]').forEach(b=>b.onclick=()=>toggleService(b.dataset.toggle));
+    $('serviceList').querySelectorAll('[data-delete]').forEach(b=>b.onclick=()=>deleteService(b.dataset.delete));
   }
   function filterServices(){const q=($('serviceSearch').value||'').toLowerCase();drawServices(services.filter(s=>String(s.name||'').toLowerCase().includes(q)||String(s.category||'').toLowerCase().includes(q)));}
+  async function toggleService(id){
+    const s=services.find(x=>String(x.id)===String(id)); if(!s)return;
+    try{const {error}=await client.from('services').update({active:!s.active}).eq('id',s.id);if(error)throw error;await renderServices();}
+    catch(e){alert(errorText(e.message));}
+  }
+  async function deleteService(id){
+    const s=services.find(x=>String(x.id)===String(id)); if(!s)return;
+    if(!confirm('Excluir o serviço “'+s.name+'”? Esta ação não poderá ser desfeita.')) return;
+    try{const {error}=await client.from('services').delete().eq('id',s.id);if(error)throw error;await renderServices();alert('Serviço excluído com sucesso.');}
+    catch(e){alert(errorText(e.message));}
+  }
   function openServiceForm(id){
     const s=id?services.find(x=>String(x.id)===String(id)):null; const c=$('content');
     c.innerHTML='<div class="card"><div class="card-head"><div><h3>'+ (s?'Editar serviço':'Novo serviço') +'</h3><p>As alterações são salvas diretamente no Supabase.</p></div></div><form id="serviceForm"><label>Nome<input id="fName" required value="'+escapeHtml(s?.name||'')+'"></label><label>Categoria<input id="fCategory" value="'+escapeHtml(s?.category||'')+'"></label><label>Descrição<textarea id="fDescription" rows="3">'+escapeHtml(s?.description||'')+'</textarea></label><label>Preço<input id="fPrice" type="number" min="0" step="0.01" required value="'+(s?.price??'')+'"></label><label class="check"><input id="fActive" type="checkbox" '+(s?.active!==false?'checked':'')+'> Exibir no site</label><div style="display:flex;gap:10px"><button class="primary" type="submit">Salvar alterações</button><button class="action" type="button" id="cancelService">Cancelar</button></div><p id="saveError" class="error"></p></form></div>';
@@ -76,7 +89,7 @@
       };
     } catch(e) { c.innerHTML='<div class="card"><h3>Configurações do Studio</h3><p class="error">Não foi possível carregar as configurações: '+escapeHtml(e.message)+'</p></div>'; }
   }
-  function renderDashboard(){ $('content').innerHTML='<div class="hero"><p class="eyebrow">VISÃO GERAL</p><h1>Olá, Iarytsa & Raquel ✦</h1><p>Gerencie o Studio I.R em um só lugar.</p></div><div class="stats"><div class="stat"><span>Faturamento do mês</span><strong>R$ 0,00</strong></div><div class="stat"><span>Atendimentos</span><strong>0</strong></div><div class="stat"><span>Ticket médio</span><strong>R$ 0,00</strong></div></div><div class="card"><h3>Acesso rápido</h3><p>Use o menu ao lado para administrar serviços, atendimentos e configurações do site.</p></div>'; }
-  function renderAttendances(){ $('content').innerHTML='<div class="card"><h3>Atendimentos</h3><p>Área de registros e faturamento.</p></div>'; }
+  function renderDashboard(){ $('content').innerHTML='<div class="hero"><p class="eyebrow">VISÃO GERAL</p><h1>Olá, Iarytsa & Raquel ✦</h1><p>Gerencie o Studio I.R em um só lugar.</p></div><div class="stats"><div class="stat"><span>Serviços cadastrados</span><strong>'+services.length+'</strong></div><div class="stat"><span>Serviços visíveis</span><strong>'+services.filter(s=>s.active).length+'</strong></div><div class="stat"><span>Serviços ocultos</span><strong>'+services.filter(s=>!s.active).length+'</strong></div></div><div class="card"><h3>Acesso rápido</h3><p>Use <b>Serviços</b> para atualizar preços e disponibilidade e <b>Configurações</b> para alterar as informações do Studio.</p></div>'; }
+  function renderAttendances(){ $('content').innerHTML='<div class="card"><h3>Atendimentos</h3><p>Área de registros e faturamento. Vamos conectar esta área aos dados reais na próxima etapa.</p></div>'; }
   window.addEventListener('DOMContentLoaded',init);
 })();
