@@ -1,0 +1,1 @@
+(()=>{'use strict';document.addEventListener('click',e=>{const b=e.target.closest?.('[data-view="clients"]');if(!b)return;e.preventDefault();e.stopImmediatePropagation();if(typeof window.openClients==='function')window.openClients()},true)})();
