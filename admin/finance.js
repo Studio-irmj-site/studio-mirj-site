@@ -22,6 +22,15 @@
   const paymentMethods = ['Pix', 'Dinheiro', 'Cartão', 'Boleto', 'Transferência', 'Outro'];
   let financeBusy = false;
   let lastFocusedElement = null;
+  let cachedIncomeData = [];
+  let cachedExpenseData = [];
+  let financeCacheReady = false;
+  const financeFilters = {
+    period: 'month',
+    start: '',
+    end: '',
+    category: 'all'
+  };
 
   const money = value => Number(value || 0).toLocaleString('pt-BR', {
     style: 'currency',
@@ -64,6 +73,61 @@
     if (!value) return '-';
     const date = new Date(`${value}T00:00:00`);
     return Number.isNaN(date.getTime()) ? '-' : date.toLocaleDateString('pt-BR');
+  };
+
+  const dateRange = () => {
+    const now = new Date();
+    const today = localDateKey(now);
+    let start = '';
+    let end = '';
+    let label = 'Todo o período';
+
+    if (financeFilters.period === 'today') {
+      start = today;
+      end = today;
+      label = 'Hoje';
+    } else if (financeFilters.period === '7') {
+      const date = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 6);
+      start = localDateKey(date);
+      end = today;
+      label = 'Últimos 7 dias';
+    } else if (financeFilters.period === '30') {
+      const date = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 29);
+      start = localDateKey(date);
+      end = today;
+      label = 'Últimos 30 dias';
+    } else if (financeFilters.period === 'month') {
+      start = localDateKey(new Date(now.getFullYear(), now.getMonth(), 1));
+      end = today;
+      label = 'Este mês';
+    } else if (financeFilters.period === 'previous') {
+      start = localDateKey(new Date(now.getFullYear(), now.getMonth() - 1, 1));
+      end = localDateKey(new Date(now.getFullYear(), now.getMonth(), 0));
+      label = 'Mês anterior';
+    } else if (financeFilters.period === 'custom') {
+      start = financeFilters.start;
+      end = financeFilters.end;
+      label = start && end ? `${formatDate(start)} a ${formatDate(end)}` : 'Período personalizado';
+    }
+
+    return { start, end, label };
+  };
+
+  const isInDateRange = (value, range) => {
+    if (!range.start && !range.end) return true;
+    const key = value?.includes?.('T') ? localDateKey(value) : String(value || '').slice(0, 10);
+    if (!key) return false;
+    return (!range.start || key >= range.start) && (!range.end || key <= range.end);
+  };
+
+  const filteredFinanceData = (incomeData, expenseData) => {
+    const range = dateRange();
+    const income = incomeData.filter(item => isInDateRange(item.attended_at, range));
+    const expenses = expenseData.filter(item => (
+      isInDateRange(item.expense_date, range)
+      && (financeFilters.category === 'all' || (item.category || 'Geral') === financeFilters.category)
+    ));
+    return { income, expenses, range };
   };
 
   const optionList = (options, selected, fallback) => {
@@ -286,29 +350,165 @@
     });
   };
 
-  async function renderFinance() {
+  const exportFinancePdf = (incomeData, expenseData) => {
+    const filtered = filteredFinanceData(incomeData, expenseData);
+    const incomeTotal = filtered.income.reduce((sum, item) => sum + Number(item.amount || 0), 0);
+    const expenseTotal = filtered.expenses.reduce((sum, item) => sum + Number(item.amount || 0), 0);
+    const categoryTotals = {};
+    filtered.expenses.forEach(item => {
+      const category = item.category || 'Geral';
+      categoryTotals[category] = (categoryTotals[category] || 0) + Number(item.amount || 0);
+    });
+
+    const rows = filtered.expenses.length
+      ? filtered.expenses.map(item => `
+        <tr>
+          <td>${formatDate(item.expense_date)}</td>
+          <td>${esc(item.description)}</td>
+          <td>${esc(item.category || 'Geral')}</td>
+          <td>${esc(item.payment_method || '-')}</td>
+          <td class="number">${money(item.amount)}</td>
+        </tr>`).join('')
+      : '<tr><td colspan="5" class="empty-row">Nenhuma despesa encontrada para os filtros selecionados.</td></tr>';
+
+    const categoriesReport = Object.entries(categoryTotals).sort((a, b) => b[1] - a[1]).map(([category, total]) => `
+      <div class="category-row"><span>${esc(category)}</span><strong>${money(total)}</strong></div>`).join('') || '<p>Nenhuma categoria no período.</p>';
+    const categoryLabel = financeFilters.category === 'all' ? 'Todas as categorias' : financeFilters.category;
+    const generatedAt = new Date().toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
+    const reportWindow = window.open('', '_blank', 'width=1000,height=800');
+
+    if (!reportWindow) {
+      showToast('O navegador bloqueou a janela do PDF. Permita pop-ups e tente novamente.', 'error');
+      return;
+    }
+
+    reportWindow.opener = null;
+    reportWindow.document.write(`<!doctype html>
+      <html lang="pt-BR">
+      <head>
+        <meta charset="utf-8">
+        <title>Relatório financeiro - Studio I.R</title>
+        <style>
+          @page { size: A4; margin: 15mm; }
+          * { box-sizing: border-box; }
+          body { margin: 0; color: #321321; font-family: Arial, sans-serif; font-size: 11px; }
+          header { display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; padding-bottom: 16px; border-bottom: 2px solid #421027; }
+          .brand { display: flex; align-items: center; gap: 12px; }
+          .logo { width: 54px; height: 54px; display: grid; place-items: center; border: 1px solid #c8a25d; border-radius: 50%; color: #421027; font: italic 18px Georgia, serif; }
+          h1, h2 { font-family: Georgia, serif; color: #421027; }
+          h1 { margin: 0 0 5px; font-size: 23px; }
+          h2 { margin: 22px 0 10px; font-size: 16px; }
+          p { margin: 3px 0; color: #78636c; line-height: 1.45; }
+          .meta { text-align: right; }
+          .summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 18px 0; }
+          .summary div { padding: 13px; border: 1px solid #eadfe4; border-radius: 9px; background: #fbf8f9; }
+          .summary span { display: block; margin-bottom: 5px; color: #8b7780; font-size: 9px; text-transform: uppercase; }
+          .summary strong { color: #421027; font: bold 17px Georgia, serif; }
+          table { width: 100%; border-collapse: collapse; }
+          th, td { padding: 9px 7px; border-bottom: 1px solid #eadfe4; text-align: left; vertical-align: top; }
+          th { background: #f7edf1; color: #421027; font-size: 9px; text-transform: uppercase; }
+          .number { text-align: right; white-space: nowrap; }
+          .empty-row { padding: 25px; text-align: center; color: #8b7780; }
+          .category-list { width: 55%; min-width: 300px; }
+          .category-row { display: flex; justify-content: space-between; gap: 15px; padding: 7px 0; border-bottom: 1px solid #eadfe4; }
+          footer { margin-top: 24px; padding-top: 10px; border-top: 1px solid #eadfe4; color: #8b7780; font-size: 9px; text-align: center; }
+          @media print { body { print-color-adjust: exact; -webkit-print-color-adjust: exact; } }
+        </style>
+      </head>
+      <body>
+        <header>
+          <div class="brand"><div class="logo">I.R</div><div><h1>Relatório financeiro</h1><p>Studio I.R - Iarytsa & Raquel</p></div></div>
+          <div class="meta"><p><strong>Período:</strong> ${esc(filtered.range.label)}</p><p><strong>Categoria:</strong> ${esc(categoryLabel)}</p><p>Gerado em ${esc(generatedAt)}</p></div>
+        </header>
+        <section class="summary">
+          <div><span>Faturamento no período</span><strong>${money(incomeTotal)}</strong></div>
+          <div><span>Despesas filtradas</span><strong>${money(expenseTotal)}</strong></div>
+          <div><span>Resultado</span><strong>${money(incomeTotal - expenseTotal)}</strong></div>
+        </section>
+        <h2>Despesas</h2>
+        <table><thead><tr><th>Data</th><th>Descrição</th><th>Categoria</th><th>Pagamento</th><th class="number">Valor</th></tr></thead><tbody>${rows}</tbody></table>
+        <h2>Despesas por categoria</h2>
+        <div class="category-list">${categoriesReport}</div>
+        <footer>Relatório gerado pelo painel administrativo do Studio I.R.</footer>
+      </body>
+      </html>`);
+    reportWindow.document.close();
+    reportWindow.focus();
+    reportWindow.addEventListener('afterprint', () => reportWindow.close());
+    window.setTimeout(() => reportWindow.print(), 300);
+  };
+
+  const wireFinanceFilters = (incomeData, expenseData) => {
+    document.getElementById('financePeriod')?.addEventListener('change', event => {
+      financeFilters.period = event.target.value;
+      if (financeFilters.period === 'custom' && (!financeFilters.start || !financeFilters.end)) {
+        const now = new Date();
+        financeFilters.start = localDateKey(new Date(now.getFullYear(), now.getMonth(), 1));
+        financeFilters.end = localDateKey(now);
+      }
+      renderFinance(true);
+    });
+
+    document.getElementById('financeCategory')?.addEventListener('change', event => {
+      financeFilters.category = event.target.value;
+      renderFinance(true);
+    });
+
+    document.getElementById('applyFinanceDates')?.addEventListener('click', () => {
+      const start = document.getElementById('financeStart')?.value || '';
+      const end = document.getElementById('financeEnd')?.value || '';
+      if (!start || !end || start > end) {
+        showToast('Selecione um intervalo de datas válido.', 'error');
+        return;
+      }
+      financeFilters.start = start;
+      financeFilters.end = end;
+      renderFinance(true);
+    });
+
+    document.getElementById('clearFinanceFilters')?.addEventListener('click', () => {
+      financeFilters.period = 'month';
+      financeFilters.start = '';
+      financeFilters.end = '';
+      financeFilters.category = 'all';
+      renderFinance(true);
+    });
+
+    document.getElementById('exportFinancePdf')?.addEventListener('click', () => {
+      exportFinancePdf(incomeData, expenseData);
+    });
+  };
+
+  async function renderFinance(useCache = false) {
     if (financeBusy || document.getElementById('title')?.textContent !== 'Financeiro') return;
     const content = document.getElementById('content');
     if (!content) return;
 
     financeBusy = true;
-    content.innerHTML = '<div class="card finance-loading"><h3>Financeiro</h3><p>Carregando informações...</p></div>';
+    if (!useCache || !financeCacheReady) {
+      content.innerHTML = '<div class="card finance-loading"><h3>Financeiro</h3><p>Carregando informações...</p></div>';
+    }
 
     try {
-      const [attendanceResult, expenseResult] = await Promise.all([
-        db.from('attendances')
-          .select('amount,attended_at,payment_method,service_name')
-          .order('attended_at', { ascending: false }),
-        db.from('expenses')
-          .select('id,description,amount,expense_date,category,payment_method,notes')
-          .order('expense_date', { ascending: false })
-      ]);
+      if (!useCache || !financeCacheReady) {
+        const [attendanceResult, expenseResult] = await Promise.all([
+          db.from('attendances')
+            .select('amount,attended_at,payment_method,service_name')
+            .order('attended_at', { ascending: false }),
+          db.from('expenses')
+            .select('id,description,amount,expense_date,category,payment_method,notes')
+            .order('expense_date', { ascending: false })
+        ]);
 
-      if (attendanceResult.error) throw attendanceResult.error;
-      if (expenseResult.error) throw expenseResult.error;
+        if (attendanceResult.error) throw attendanceResult.error;
+        if (expenseResult.error) throw expenseResult.error;
+        cachedIncomeData = attendanceResult.data || [];
+        cachedExpenseData = expenseResult.data || [];
+        financeCacheReady = true;
+      }
 
-      const incomeData = attendanceResult.data || [];
-      const expenseData = expenseResult.data || [];
+      const incomeData = cachedIncomeData;
+      const expenseData = cachedExpenseData;
       const income = incomeData.reduce((sum, item) => sum + Number(item.amount || 0), 0);
       const expenses = expenseData.reduce((sum, item) => sum + Number(item.amount || 0), 0);
       const today = localDateKey(new Date());
@@ -366,8 +566,17 @@
       });
       const topServices = Object.entries(serviceMap).sort((a, b) => b[1] - a[1]).slice(0, 5);
 
-      const expenseRows = expenseData.length
-        ? expenseData.map(item => `
+      const filtered = filteredFinanceData(incomeData, expenseData);
+      const filteredExpenseTotal = filtered.expenses.reduce((sum, item) => sum + Number(item.amount || 0), 0);
+      const filteredIncomeTotal = filtered.income.reduce((sum, item) => sum + Number(item.amount || 0), 0);
+      const averageExpense = filtered.expenses.length ? filteredExpenseTotal / filtered.expenses.length : 0;
+      const categoryOptions = [...new Set(expenseData.map(item => item.category || 'Geral'))]
+        .sort((a, b) => a.localeCompare(b, 'pt-BR'))
+        .map(category => `<option value="${esc(category)}" ${financeFilters.category === category ? 'selected' : ''}>${esc(category)}</option>`)
+        .join('');
+
+      const expenseRows = filtered.expenses.length
+        ? filtered.expenses.map(item => `
           <tr>
             <td>${formatDate(item.expense_date)}</td>
             <td><strong>${esc(item.description)}</strong>${item.notes ? `<small class="expense-note">${esc(item.notes)}</small>` : ''}</td>
@@ -379,7 +588,7 @@
               <button class="action danger" type="button" data-expense-delete="${esc(item.id)}" aria-label="Excluir despesa ${esc(item.description)}">Excluir</button>
             </td>
           </tr>`).join('')
-        : '<tr><td colspan="6" class="expense-empty">Nenhuma despesa cadastrada.</td></tr>';
+        : '<tr><td colspan="6" class="expense-empty">Nenhuma despesa encontrada para os filtros selecionados.</td></tr>';
 
       content.innerHTML = `
         <div class="stats finance-stats">
@@ -407,6 +616,44 @@
           <div class="card"><h3>Serviços mais realizados</h3><div class="rank-list">${topServices.map(([key, value]) => `<div><span>${esc(key)}</span><strong>${value}</strong></div>`).join('') || '<p class="empty">Nenhum atendimento registrado.</p>'}</div></div>
           <div class="card"><h3>Resumo do período</h3><p>Total de atendimentos: <strong>${incomeData.length}</strong></p><p>Ticket médio: <strong>${money(incomeData.length ? income / incomeData.length : 0)}</strong></p><p>Resultado líquido: <strong>${money(income - expenses)}</strong></p></div>
         </div>
+        <div class="card finance-filter-card">
+          <div class="card-head finance-filter-head">
+            <div><p class="eyebrow">RELATÓRIO DETALHADO</p><h3>Filtros financeiros</h3><p>Escolha o período e a categoria para consultar ou exportar.</p></div>
+            <div class="finance-report-actions">
+              <button id="clearFinanceFilters" class="action" type="button">Limpar filtros</button>
+              <button id="exportFinancePdf" class="primary pdf-button" type="button">Exportar PDF</button>
+            </div>
+          </div>
+          <div class="finance-filter-grid">
+            <label for="financePeriod">Período
+              <select id="financePeriod">
+                <option value="today" ${financeFilters.period === 'today' ? 'selected' : ''}>Hoje</option>
+                <option value="7" ${financeFilters.period === '7' ? 'selected' : ''}>Últimos 7 dias</option>
+                <option value="30" ${financeFilters.period === '30' ? 'selected' : ''}>Últimos 30 dias</option>
+                <option value="month" ${financeFilters.period === 'month' ? 'selected' : ''}>Este mês</option>
+                <option value="previous" ${financeFilters.period === 'previous' ? 'selected' : ''}>Mês anterior</option>
+                <option value="all" ${financeFilters.period === 'all' ? 'selected' : ''}>Todo o período</option>
+                <option value="custom" ${financeFilters.period === 'custom' ? 'selected' : ''}>Personalizado</option>
+              </select>
+            </label>
+            <label for="financeCategory">Categoria
+              <select id="financeCategory"><option value="all">Todas as categorias</option>${categoryOptions}</select>
+            </label>
+            <div class="custom-finance-dates ${financeFilters.period === 'custom' ? 'show' : ''}">
+              <label for="financeStart">De<input id="financeStart" type="date" value="${esc(financeFilters.start)}"></label>
+              <label for="financeEnd">Até<input id="financeEnd" type="date" value="${esc(financeFilters.end)}"></label>
+              <button id="applyFinanceDates" class="action" type="button">Aplicar datas</button>
+            </div>
+          </div>
+          <div class="filtered-summary">
+            <div><span>Período selecionado</span><strong>${esc(filtered.range.label)}</strong></div>
+            <div><span>Faturamento</span><strong>${money(filteredIncomeTotal)}</strong></div>
+            <div><span>Despesas</span><strong>${money(filteredExpenseTotal)}</strong></div>
+            <div><span>Lançamentos</span><strong>${filtered.expenses.length}</strong></div>
+            <div><span>Média por despesa</span><strong>${money(averageExpense)}</strong></div>
+            <div><span>Resultado</span><strong>${money(filteredIncomeTotal - filteredExpenseTotal)}</strong></div>
+          </div>
+        </div>
         <div class="card expense-card">
           <div class="card-head">
             <div><p class="eyebrow">SAÍDAS</p><h3>Despesas</h3><p>Cadastre, edite e acompanhe as saídas do Studio.</p></div>
@@ -421,6 +668,7 @@
         </div>`;
 
       wireExpenseActions(expenseData);
+      wireFinanceFilters(incomeData, expenseData);
     } catch (error) {
       content.innerHTML = `<div class="card finance-error"><h3>Não foi possível carregar o Financeiro</h3><p class="error">${esc(error.message || 'Tente novamente em alguns instantes.')}</p><button id="retryFinance" class="primary" type="button">Tentar novamente</button></div>`;
       document.getElementById('retryFinance')?.addEventListener('click', renderFinance);
