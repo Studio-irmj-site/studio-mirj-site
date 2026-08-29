@@ -155,6 +155,19 @@ a:focus-visible {
   text-transform: uppercase;
 }
 
+.brand__copy .brand__slogan {
+  width: fit-content;
+  background: linear-gradient(90deg, var(--rose-700) 0%, var(--gold) 48%, var(--rose-700) 100%);
+  background-size: 180% auto;
+  color: var(--gold);
+  font-size: 9px;
+  letter-spacing: 0.15em;
+  text-shadow: 0 2px 14px rgba(200, 154, 75, 0.28);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
 .instagram-link {
   display: inline-flex;
   align-items: center;
