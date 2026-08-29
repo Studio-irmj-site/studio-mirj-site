@@ -41,7 +41,7 @@ function renderCategoryFilters() {
 }
 function createServiceCard(service) {
   const id = serviceId(service); const selected = state.selectedIds.has(id); const card = document.createElement("button"); const icon = categoryIcons[service.category] || "✦";
-  card.className = "service-card"; card.type = "button"; card.setAttribute("aria-pressed", String(selected)); card.setAttribute("aria-label", `${selected ? "Remover" : "Adicionar"} ${service.name}, ${formatMoney.format(Number(service.price || 0))}`);
+  card.className = "service-card"; card.type = "button"; card.dataset.serviceId = id; card.setAttribute("aria-pressed", String(selected)); card.setAttribute("aria-label", `${selected ? "Remover" : "Adicionar"} ${service.name}, ${formatMoney.format(Number(service.price || 0))}`);
   const iconElement = document.createElement("span"); iconElement.className = "service-card__icon"; iconElement.setAttribute("aria-hidden", "true"); iconElement.textContent = icon;
   const copy = document.createElement("span"); copy.className = "service-card__copy";
   const name = document.createElement("strong"); name.textContent = service.name; copy.append(name);
@@ -76,39 +76,6 @@ async function fetchTable(path) {
   if (!response.ok) throw new Error(`Falha ao carregar dados (${response.status}).`);
   return response.json();
 }
-async function createQuoteRecord() {
-  if (!config.url || !config.anonKey) throw new Error("Configuração do Supabase não encontrada.");
-  const chosen = selectedServices();
-  const payload = { client_name: "Orçamento pelo site", phone: "", items: chosen.map((service) => ({ id: service.id, name: service.name, category: service.category || null, description: service.description || null, price: Number(service.price || 0), unit: service.unit || null })), total: Number(selectedTotal().toFixed(2)), status: "Pendente", notes: "Solicitação enviada pelo site e encaminhada para o WhatsApp do Studio." };
-  const response = await fetch(`${config.url}/rest/v1/quotes`, { method: "POST", headers: { apikey: config.anonKey, Authorization: `Bearer ${config.anonKey}`, "Content-Type": "application/json", Prefer: "return=minimal" }, body: JSON.stringify(payload) });
-  if (!response.ok) { const detail = await response.text().catch(() => ""); throw new Error(`Não foi possível registrar o orçamento (${response.status}) ${detail}`); }
-}
-async function sendQuote() {
-  const destination = whatsappUrl();
-  const hasSelection = state.selectedIds.size > 0;
-  if (!hasSelection) { window.open(destination, "_blank", "noopener,noreferrer"); return; }
-
-  // Abre o WhatsApp imediatamente, dentro do clique do usuário, para evitar bloqueio de pop-up.
-  const whatsappWindow = window.open(destination, "_blank", "noopener,noreferrer");
-  if (!whatsappWindow) window.location.href = destination;
-
-  elements.ctaButton.setAttribute("aria-busy", "true");
-  elements.ctaButton.style.pointerEvents = "none";
-  const originalLabel = elements.ctaLabel.textContent;
-  elements.ctaLabel.textContent = "Registrando…";
-
-  try {
-    await createQuoteRecord();
-    elements.ctaLabel.textContent = "Orçamento registrado ✓";
-  } catch (error) {
-    console.error("Falha ao registrar orçamento:", error);
-    elements.ctaLabel.textContent = originalLabel;
-  } finally {
-    setTimeout(() => {
-      elements.ctaButton.removeAttribute("aria-busy"); elements.ctaButton.style.pointerEvents = ""; elements.ctaLabel.textContent = originalLabel;
-    }, 1200);
-  }
-}
 async function loadServices() {
   elements.services.setAttribute("aria-busy", "true"); elements.servicesStatus.textContent = "Carregando serviços disponíveis…"; elements.services.innerHTML = ['<div class="service-skeleton" aria-hidden="true"></div>', '<div class="service-skeleton" aria-hidden="true"></div>', '<div class="service-skeleton" aria-hidden="true"></div>', '<div class="service-skeleton" aria-hidden="true"></div>'].join("");
   try {
@@ -135,5 +102,6 @@ async function loadStudioSettings() {
   catch (error) { console.warn("Configurações do Studio indisponíveis; usando os dados padrão.", error); }
 }
 elements.clearButton.addEventListener("click", () => { state.selectedIds.clear(); renderServices(); updateQuoteSummary(); });
-elements.ctaButton.addEventListener("click", (event) => { event.preventDefault(); sendQuote(); });
+// O fluxo de orçamento/agendamento é controlado por quote-register.js.
+// Não adicionamos aqui outro listener ao CTA para evitar abrir o WhatsApp antes do registro no ADM.
 updateQuoteSummary(); loadServices(); loadStudioSettings();
