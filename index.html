@@ -4,201 +4,63 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#f6f0ff">
-    <meta
-      name="description"
-      content="Monte seu orçamento de unhas no Studio I.R e envie sua seleção pelo WhatsApp."
-    >
+    <meta name="description" content="Monte seu orçamento de unhas no Studio I.R e envie sua seleção pelo WhatsApp.">
     <title>Studio I.R — Monte seu orçamento</title>
-
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;1,600&display=swap"
-      rel="stylesheet"
-    >
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="site.css">
   </head>
-
   <body>
     <div class="page-glow page-glow--top" aria-hidden="true"></div>
     <div class="page-glow page-glow--bottom" aria-hidden="true"></div>
-
     <header class="site-header">
       <div class="shell site-header__inner">
         <div class="brand" aria-label="Studio I.R">
-          <span class="brand__mark" aria-hidden="true">
-            <span class="brand__monogram">
-              <span class="brand__initial">I</span>
-              <span class="brand__ampersand">&amp;</span>
-              <span class="brand__initial">R</span>
-            </span>
-          </span>
-          <span class="brand__copy">
-            <strong id="brandName">Studio I.R</strong>
-            <small class="brand__slogan">Elegância &amp; Cuidado</small>
-          </span>
+          <span class="brand__mark" aria-hidden="true"><span class="brand__monogram"><span class="brand__initial">I</span><span class="brand__ampersand">&amp;</span><span class="brand__initial">R</span></span></span>
+          <span class="brand__copy"><strong id="brandName">Studio I.R</strong><small class="brand__slogan">Elegância &amp; Cuidado</small></span>
         </div>
-
-        <a
-          class="instagram-link"
-          id="instagramLink"
-          href="https://www.instagram.com/iarytsa_e_raquel"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <span aria-hidden="true">◎</span>
-          <span id="instagram">@iarytsa_e_raquel</span>
-        </a>
+        <a class="instagram-link" id="instagramLink" href="https://www.instagram.com/iarytsa_e_raquel" target="_blank" rel="noopener noreferrer"><span aria-hidden="true">◎</span><span id="instagram">@iarytsa_e_raquel</span></a>
       </div>
     </header>
-
     <main>
       <section class="hero shell" aria-labelledby="heroTitle">
         <div class="hero__card">
           <div class="hero__content">
-            <p class="eyebrow">
-              <span aria-hidden="true">✦</span>
-              <span id="city">Jundiaí – SP</span>
-            </p>
+            <p class="eyebrow"><span aria-hidden="true">✦</span><span id="city">Jundiaí – SP</span></p>
             <h1 id="heroTitle">Seu cuidado começa com uma <em>escolha.</em></h1>
-            <p class="hero__text" id="tagline">
-              Selecione os serviços que deseja, confira a estimativa e envie tudo para nós pelo WhatsApp.
-            </p>
-
-            <div class="hero__benefits" aria-label="Como funciona">
-              <span><b>1</b> Escolha</span>
-              <span><b>2</b> Confira</span>
-              <span><b>3</b> Envie</span>
-            </div>
+            <p class="hero__text" id="tagline">Selecione os serviços que deseja, confira a estimativa e envie tudo para nós pelo WhatsApp.</p>
+            <div class="hero__benefits" aria-label="Como funciona"><span><b>1</b> Escolha</span><span><b>2</b> Confira</span><span><b>3</b> Envie</span></div>
           </div>
-
-          <div class="hero__seal" aria-hidden="true">
-            <span>feito para</span>
-            <strong>você</strong>
-            <i>✦</i>
-          </div>
+          <div class="hero__seal" aria-hidden="true"><span>feito para</span><strong>você</strong><i>✦</i></div>
         </div>
       </section>
-
       <section class="services-section shell" aria-labelledby="servicesTitle">
-        <div class="section-heading">
-          <div>
-            <p class="section-kicker">Monte seu orçamento</p>
-            <h2 id="servicesTitle">Quais serviços você deseja?</h2>
-          </div>
-          <p>Você pode selecionar mais de uma opção.</p>
-        </div>
-
+        <div class="section-heading"><div><p class="section-kicker">Monte seu orçamento</p><h2 id="servicesTitle">Quais serviços você deseja?</h2></div><p>Você pode selecionar mais de uma opção.</p></div>
         <nav class="category-filter" id="tabs" aria-label="Categorias de serviços"></nav>
-
-        <div class="services-status" id="servicesStatus" role="status" aria-live="polite">
-          Carregando serviços disponíveis…
-        </div>
-
-        <div class="services-grid" id="services" aria-busy="true">
-          <div class="service-skeleton" aria-hidden="true"></div>
-          <div class="service-skeleton" aria-hidden="true"></div>
-          <div class="service-skeleton" aria-hidden="true"></div>
-          <div class="service-skeleton" aria-hidden="true"></div>
-        </div>
-
-        <aside class="estimate-note">
-          <span class="estimate-note__icon" aria-hidden="true">i</span>
-          <p>
-            <strong>Sobre o valor exibido</strong>
-            Esta é uma estimativa com base nos serviços escolhidos. Detalhes, disponibilidade e valor final são confirmados pelo WhatsApp.
-          </p>
-        </aside>
+        <div class="services-status" id="servicesStatus" role="status" aria-live="polite">Carregando serviços disponíveis…</div>
+        <div class="services-grid" id="services" aria-busy="true"><div class="service-skeleton" aria-hidden="true"></div><div class="service-skeleton" aria-hidden="true"></div><div class="service-skeleton" aria-hidden="true"></div><div class="service-skeleton" aria-hidden="true"></div></div>
+        <aside class="estimate-note"><span class="estimate-note__icon" aria-hidden="true">i</span><p><strong>Sobre o valor exibido</strong>Esta é uma estimativa com base nos serviços escolhidos. Detalhes, disponibilidade e valor final são confirmados pelo WhatsApp.</p></aside>
       </section>
-
       <section class="visit shell" aria-labelledby="visitTitle">
-        <div class="section-heading section-heading--compact">
-          <div>
-            <p class="section-kicker">Antes de agendar</p>
-            <h2 id="visitTitle">Informações do Studio</h2>
-          </div>
-        </div>
-
+        <div class="section-heading section-heading--compact"><div><p class="section-kicker">Antes de agendar</p><h2 id="visitTitle">Informações do Studio</h2></div></div>
         <div class="visit__grid">
-          <article class="info-card info-card--wide">
-            <span class="info-card__icon" aria-hidden="true">⌖</span>
-            <div>
-              <small>Endereço</small>
-              <strong id="addressTitle">Jundiaí – SP</strong>
-              <p id="address">Av. Presbítero Manoel Antônio Dias Filho, 1420</p>
-            </div>
-          </article>
-
-          <article class="info-card">
-            <span class="info-card__icon" aria-hidden="true">◷</span>
-            <div>
-              <small>Atendimento</small>
-              <strong id="hoursTitle">Seg – Sáb</strong>
-              <p id="hours">9h às 19h</p>
-            </div>
-          </article>
-
-          <article class="info-card">
-            <span class="info-card__icon" aria-hidden="true">◇</span>
-            <div>
-              <small>Pagamento</small>
-              <strong>No Studio</strong>
-              <p>Pix disponível</p>
-            </div>
-          </article>
+          <article class="info-card info-card--wide"><span class="info-card__icon" aria-hidden="true">⌖</span><div><small>Endereço</small><strong id="addressTitle">Jundiaí – SP</strong><p id="address">Av. Presbítero Manoel Antônio Dias Filho, 1420</p></div></article>
+          <article class="info-card"><span class="info-card__icon" aria-hidden="true">◷</span><div><small>Atendimento</small><strong id="hoursTitle">Seg – Sáb</strong><p id="hours">9h às 19h</p></div></article>
+          <article class="info-card"><span class="info-card__icon" aria-hidden="true">◇</span><div><small>Pagamento</small><strong>No Studio</strong><p>Pix disponível</p></div></article>
         </div>
       </section>
     </main>
-
     <footer class="site-footer shell">
-      <div class="brand brand--footer">
-        <span class="brand__mark" aria-hidden="true">
-          <span class="brand__monogram">
-            <span class="brand__initial">I</span>
-            <span class="brand__ampersand">&amp;</span>
-            <span class="brand__initial">R</span>
-          </span>
-        </span>
-        <span class="brand__copy">
-          <strong id="footerName">Studio I.R — Iarytsa e Raquel</strong>
-          <small>Beleza, cuidado e autoestima.</small>
-        </span>
-      </div>
+      <div class="brand brand--footer"><span class="brand__mark" aria-hidden="true"><span class="brand__monogram"><span class="brand__initial">I</span><span class="brand__ampersand">&amp;</span><span class="brand__initial">R</span></span></span><span class="brand__copy"><strong id="footerName">Studio I.R — Iarytsa e Raquel</strong><small>Beleza, cuidado e autoestima.</small></span></div>
       <p>Atendimento com horário reservado e confirmação prévia.</p>
     </footer>
-
     <div class="quote-bar" aria-label="Resumo do orçamento">
-      <div class="quote-bar__inner shell">
-        <div class="quote-summary" aria-live="polite">
-          <span id="count">Nenhum serviço selecionado</span>
-          <strong id="total">Escolha seus serviços</strong>
-        </div>
-
-        <button class="clear-button" id="clearButton" type="button" hidden>
-          Limpar
-        </button>
-
-        <a
-          class="whatsapp-button"
-          id="ctaButton"
-          href="https://wa.me/5511986344770"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <span class="whatsapp-button__icon" aria-hidden="true">◔</span>
-          <span id="ctaLabel">Falar no WhatsApp</span>
-          <span aria-hidden="true">→</span>
-        </a>
-      </div>
+      <div class="quote-bar__inner shell"><div class="quote-summary" aria-live="polite"><span id="count">Nenhum serviço selecionado</span><strong id="total">Escolha seus serviços</strong></div><button class="clear-button" id="clearButton" type="button" hidden>Limpar</button><a class="whatsapp-button" id="ctaButton" href="https://wa.me/5511986344770" target="_blank" rel="noopener noreferrer"><span class="whatsapp-button__icon" aria-hidden="true">◔</span><span id="ctaLabel">Falar no WhatsApp</span><span aria-hidden="true">→</span></a></div>
     </div>
-
-    <noscript>
-      <p class="noscript-message">
-        Ative o JavaScript do navegador para visualizar os serviços e montar seu orçamento.
-      </p>
-    </noscript>
-
+    <noscript><p class="noscript-message">Ative o JavaScript do navegador para visualizar os serviços e montar seu orçamento.</p></noscript>
     <script src="supabase-config.js"></script>
     <script src="site.js"></script>
+    <script src="quote-register.js"></script>
   </body>
 </html>
