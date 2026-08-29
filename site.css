@@ -114,25 +114,57 @@ a:focus-visible {
 }
 
 .brand__mark {
+  position: relative;
   display: grid;
-  width: 46px;
-  height: 46px;
+  width: 50px;
+  height: 50px;
   place-items: center;
   flex: 0 0 auto;
-  border: 1px solid rgba(200, 154, 75, 0.6);
+  border: 1px solid transparent;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.72);
-  color: var(--wine);
-  font-family: "Playfair Display", serif;
-  font-size: 17px;
-  font-weight: 600;
-  letter-spacing: -0.06em;
-  box-shadow: inset 0 0 0 4px rgba(200, 154, 75, 0.07);
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.98), rgba(244, 236, 255, 0.94)) padding-box,
+    linear-gradient(135deg, #f2cf87 0%, #b58bd4 48%, #d3a74f 100%) border-box;
+  box-shadow:
+    0 8px 24px rgba(87, 48, 116, 0.14),
+    inset 0 0 18px rgba(255, 255, 255, 0.75);
 }
 
-.brand__mark span {
-  margin-inline: 1px 2px;
+.brand__mark::after {
+  position: absolute;
+  inset: 4px;
+  border: 1px solid rgba(200, 154, 75, 0.2);
+  border-radius: inherit;
+  content: "";
+}
+
+.brand__monogram {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  font-family: "Playfair Display", serif;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.brand__initial {
+  color: var(--wine);
+  font-size: 19px;
+  letter-spacing: -0.08em;
+  text-shadow: 0 2px 10px rgba(75, 22, 48, 0.12);
+}
+
+.brand__ampersand {
+  margin-inline: 2px 3px;
   color: var(--gold);
+  font-family: "DM Sans", sans-serif;
+  font-size: 8px;
+  font-style: italic;
+  font-weight: 700;
+  letter-spacing: 0;
+  transform: translateY(-2px);
 }
 
 .brand__copy {
@@ -657,7 +689,15 @@ a:focus-visible {
 .brand--footer .brand__mark {
   width: 40px;
   height: 40px;
+}
+
+.brand--footer .brand__initial {
   font-size: 15px;
+}
+
+.brand--footer .brand__ampersand {
+  margin-inline: 1px 2px;
+  font-size: 6px;
 }
 
 .brand--footer .brand__copy strong {
@@ -935,8 +975,17 @@ a:focus-visible {
 
 @media (max-width: 430px) {
   .brand__mark {
-    width: 41px;
-    height: 41px;
+    width: 44px;
+    height: 44px;
+  }
+
+  .brand__initial {
+    font-size: 17px;
+  }
+
+  .brand__ampersand {
+    margin-inline: 1px 2px;
+    font-size: 7px;
   }
 
   .brand__copy strong {
