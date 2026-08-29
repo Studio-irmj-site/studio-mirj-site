@@ -1,6 +1,9 @@
 :root {
   color-scheme: light;
-  --paper: #fffdfd;
+  --paper: #fbf8ff;
+  --lilac-50: #f8f3ff;
+  --lilac-100: #eee2ff;
+  --lilac-300: #ceb2ee;
   --surface: #ffffff;
   --surface-soft: #fff5f7;
   --rose-50: #fff0f4;
@@ -36,8 +39,9 @@ body {
   padding-bottom: 126px;
   overflow-x: hidden;
   background:
-    radial-gradient(circle at 9% 4%, rgba(240, 154, 180, 0.13), transparent 28rem),
-    linear-gradient(180deg, #fffafb 0%, var(--paper) 36%, #fff9fa 100%);
+    radial-gradient(circle at 9% 4%, rgba(190, 153, 229, 0.22), transparent 29rem),
+    radial-gradient(circle at 92% 55%, rgba(220, 199, 244, 0.2), transparent 32rem),
+    linear-gradient(180deg, var(--lilac-50) 0%, var(--paper) 44%, #f6efff 100%);
   color: var(--ink);
   font-family: "DM Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -83,13 +87,13 @@ a:focus-visible {
 .page-glow--top {
   top: 80px;
   right: -220px;
-  background: rgba(255, 215, 226, 0.45);
+  background: rgba(206, 178, 238, 0.46);
 }
 
 .page-glow--bottom {
   bottom: 130px;
   left: -230px;
-  background: rgba(240, 154, 180, 0.16);
+  background: rgba(190, 153, 229, 0.23);
 }
 
 .site-header {
@@ -664,7 +668,7 @@ a:focus-visible {
   left: 0;
   border-top: 1px solid var(--line);
   padding: 13px 0 max(13px, env(safe-area-inset-bottom));
-  background: rgba(255, 250, 251, 0.92);
+  background: rgba(248, 243, 255, 0.93);
   box-shadow: 0 -12px 40px rgba(75, 22, 48, 0.08);
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
