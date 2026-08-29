@@ -34,10 +34,13 @@ button:disabled { cursor: wait; opacity: .65; }
 .brand { display: flex; gap: 10px; align-items: center; padding: 0 8px 32px; }
 .brand strong { font-family: 'Playfair Display'; display: block; }
 .brand small { opacity: .55; font-size: 10px; }
-.nav, .logout { background: transparent; color: #fff; text-align: left; padding: 13px 12px; border-radius: 12px; margin: 2px 0; opacity: .7; }
+.nav, .logout { width: 100%; background: transparent; color: #fff; text-align: left; padding: 13px 12px; border-radius: 12px; margin: 2px 0; opacity: .7; }
+.nav { position: relative; display: flex; align-items: center; gap: 12px; font-size: 13px; font-weight: 600; }
 .nav.active, .nav:hover { background: #ffffff12; opacity: 1; }
-.nav span { margin-left: 9px; }
-.logout { margin-top: auto; background: #ffffff10; text-align: center; }
+.nav-icon { width: 19px; height: 19px; flex: 0 0 19px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; transition: color .2s ease, transform .2s ease; }
+.nav.active .nav-icon { color: #f1d394; }
+.nav:hover .nav-icon { transform: translateX(1px); }
+.logout { display: flex; align-items: center; justify-content: center; gap: 9px; margin-top: auto; background: #ffffff10; text-align: center; }
 .panel main { flex: 1; padding: 32px; max-width: 1250px; min-width: 0; }
 .panel header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
 .panel header h2 { font-size: 31px; margin: 5px 0; }
@@ -167,7 +170,9 @@ button:disabled { cursor: wait; opacity: .65; }
 
 @media (max-width: 700px) {
   .panel aside { width: 68px; }
-  .brand div:not(.logo), .nav span { display: none; }
+  .brand div:not(.logo), .nav span, .logout span { display: none; }
+  .nav, .logout { justify-content: center; padding-inline: 0; }
+  #appointmentRequestBadge { position: absolute; top: 2px; right: 1px; margin: 0 !important; transform: scale(.78); }
   .panel main { padding: 18px; }
   .stats, .finance-stats { grid-template-columns: 1fr; }
   .service { grid-template-columns: 1fr auto; }
