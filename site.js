@@ -74,8 +74,12 @@ function whatsappMessage() {
   ].join("\n");
 }
 
+function whatsappUrl() {
+  return `https://wa.me/${state.phone}?text=${encodeURIComponent(whatsappMessage())}`;
+}
+
 function updateWhatsappLink() {
-  elements.ctaButton.href = `https://wa.me/${state.phone}?text=${encodeURIComponent(whatsappMessage())}`;
+  elements.ctaButton.href = whatsappUrl();
 }
 
 function updateQuoteSummary() {
@@ -252,6 +256,75 @@ async function fetchTable(path) {
   return response.json();
 }
 
+async function createQuoteRecord() {
+  if (!config.url || !config.anonKey) {
+    throw new Error("Configuração do Supabase não encontrada.");
+  }
+
+  const chosen = selectedServices();
+  const payload = {
+    client_name: "Orçamento pelo site",
+    phone: "",
+    items: chosen.map((service) => ({
+      id: service.id,
+      name: service.name,
+      category: service.category || null,
+      description: service.description || null,
+      price: Number(service.price || 0),
+      unit: service.unit || null,
+    })),
+    total: Number(selectedTotal().toFixed(2)),
+    status: "Pendente",
+    notes: "Solicitação enviada pelo site e encaminhada para o WhatsApp do Studio.",
+  };
+
+  const response = await fetch(`${config.url}/rest/v1/quotes`, {
+    method: "POST",
+    headers: {
+      apikey: config.anonKey,
+      Authorization: `Bearer ${config.anonKey}`,
+      "Content-Type": "application/json",
+      Prefer: "return=minimal",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    const detail = await response.text().catch(() => "");
+    throw new Error(`Não foi possível registrar o orçamento (${response.status}) ${detail}`);
+  }
+}
+
+async function sendQuote() {
+  const destination = whatsappUrl();
+  const hasSelection = state.selectedIds.size > 0;
+
+  if (!hasSelection) {
+    window.open(destination, "_blank", "noopener,noreferrer");
+    return;
+  }
+
+  elements.ctaButton.setAttribute("aria-busy", "true");
+  elements.ctaButton.style.pointerEvents = "none";
+  const originalLabel = elements.ctaLabel.textContent;
+  elements.ctaLabel.textContent = "Registrando…";
+
+  try {
+    await createQuoteRecord();
+    elements.ctaLabel.textContent = "Orçamento registrado ✓";
+  } catch (error) {
+    console.error("Falha ao registrar orçamento:", error);
+    elements.ctaLabel.textContent = originalLabel;
+  } finally {
+    window.open(destination, "_blank", "noopener,noreferrer");
+    setTimeout(() => {
+      elements.ctaButton.removeAttribute("aria-busy");
+      elements.ctaButton.style.pointerEvents = "";
+      elements.ctaLabel.textContent = originalLabel;
+    }, 900);
+  }
+}
+
 async function loadServices() {
   elements.services.setAttribute("aria-busy", "true");
   elements.servicesStatus.textContent = "Carregando serviços disponíveis…";
@@ -351,6 +424,11 @@ elements.clearButton.addEventListener("click", () => {
   state.selectedIds.clear();
   renderServices();
   updateQuoteSummary();
+});
+
+elements.ctaButton.addEventListener("click", (event) => {
+  event.preventDefault();
+  sendQuote();
 });
 
 updateQuoteSummary();
