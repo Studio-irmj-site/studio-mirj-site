@@ -6,15 +6,12 @@
   if (!cta || !config.url || !config.anonKey) return;
 
   const esc = (value) => String(value ?? "").replace(/[&<>\"']/g, (char) => ({
-    "&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;",
-    "\"": "&quot;",
-    "'": "&#39;",
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;",
   })[char]);
 
   function selectedItems() {
     return [...document.querySelectorAll(".service-card[aria-pressed='true']")].map((card) => ({
+      id: card.dataset.serviceId || null,
       name: card.querySelector(".service-card__copy strong")?.textContent?.trim() || "Serviço",
       price: Number((card.querySelector(".service-card__price strong")?.textContent || "0").replace(/[^0-9,]/g, "").replace(/\./g, "").replace(",", ".")) || 0,
     }));
@@ -52,7 +49,7 @@
     modal.innerHTML = `
       <div class="request-card" role="dialog" aria-modal="true" aria-labelledby="requestTitle">
         <h3 id="requestTitle">Solicitar atendimento</h3>
-        <p>Preencha seus dados e escolha quando gostaria de ser atendida. Sua solicitação será registrada no Studio e também enviada pelo WhatsApp para aviso da equipe.</p>
+        <p>Preencha seus dados e escolha quando gostaria de ser atendida. Primeiro registraremos sua solicitação no Studio; depois abriremos o WhatsApp para avisar a equipe.</p>
         <div class="request-summary"><strong>Serviço(s) selecionado(s)</strong><span>${esc(servicesText)}</span><br><strong>Valor estimado</strong><span>R$ ${total.toFixed(2).replace('.', ',')}</span></div>
         <form id="appointmentRequestForm">
           <div class="request-grid">
@@ -95,13 +92,10 @@
         return;
       }
 
-      const serviceId = document.querySelector(".service-card[aria-pressed='true']")?.dataset?.serviceId || null;
+      const serviceId = items[0]?.id || null;
       submit.disabled = true;
       submit.textContent = "Registrando…";
       errorBox.textContent = "";
-
-      // Abrimos a janela dentro do clique do usuário para evitar bloqueio de pop-up.
-      const whatsappWindow = window.open("about:blank", "_blank");
 
       try {
         const response = await fetch(`${config.url}/rest/v1/appointments`, {
@@ -148,15 +142,9 @@
         ].join("\n");
         const whatsappUrl = `https://wa.me/${studioPhone}?text=${encodeURIComponent(message)}`;
 
-        if (whatsappWindow && !whatsappWindow.closed) {
-          whatsappWindow.location.href = whatsappUrl;
-        } else {
-          window.location.href = whatsappUrl;
-        }
-
-        modal.querySelector(".request-card").innerHTML = `<h3>Solicitação registrada ✓</h3><p>Seu pedido foi registrado no Studio. O WhatsApp será aberto para avisar a equipe.</p><div class="request-summary"><strong>Data</strong><span>${esc(dateText)} às ${esc(timeText)}</span><br><strong>Serviço</strong><span>${esc(servicesText)}</span></div>`;
+        // O registro já foi confirmado. Só agora navegamos para o WhatsApp.
+        window.location.href = whatsappUrl;
       } catch (error) {
-        if (whatsappWindow && !whatsappWindow.closed) whatsappWindow.close();
         console.error(error);
         errorBox.textContent = error.message || "Não foi possível enviar a solicitação. Tente novamente.";
         submit.disabled = false;
@@ -168,8 +156,8 @@
   }
 
   cta.addEventListener("click", (event) => {
-    if (!selectedItems().length) return;
     event.preventDefault();
+    if (!selectedItems().length) return;
     openRequestModal();
   });
 })();
