@@ -52,7 +52,7 @@
     modal.innerHTML = `
       <div class="request-card" role="dialog" aria-modal="true" aria-labelledby="requestTitle">
         <h3 id="requestTitle">Solicitar atendimento</h3>
-        <p>Preencha seus dados e escolha quando gostaria de ser atendida. Sua solicitação será enviada para o Studio para confirmação.</p>
+        <p>Preencha seus dados e escolha quando gostaria de ser atendida. Sua solicitação será registrada no Studio e também enviada pelo WhatsApp para aviso da equipe.</p>
         <div class="request-summary"><strong>Serviço(s) selecionado(s)</strong><span>${esc(servicesText)}</span><br><strong>Valor estimado</strong><span>R$ ${total.toFixed(2).replace('.', ',')}</span></div>
         <form id="appointmentRequestForm">
           <div class="request-grid">
@@ -62,7 +62,7 @@
             <label class="request-field">Horário desejado<input id="requestTime" type="time" required step="1800"></label>
           </div>
           <p id="requestError" class="request-error"></p>
-          <div class="request-actions"><button class="request-cancel" type="button" id="requestCancel">Cancelar</button><button class="request-submit" type="submit" id="requestSubmit">Solicitar atendimento</button></div>
+          <div class="request-actions"><button class="request-cancel" type="button" id="requestCancel">Cancelar</button><button class="request-submit" type="submit" id="requestSubmit">Confirmar solicitação</button></div>
         </form>
       </div>
     `;
@@ -96,10 +96,12 @@
       }
 
       const serviceId = document.querySelector(".service-card[aria-pressed='true']")?.dataset?.serviceId || null;
-      const primaryService = items[0];
       submit.disabled = true;
-      submit.textContent = "Enviando solicitação…";
+      submit.textContent = "Registrando…";
       errorBox.textContent = "";
+
+      // Abrimos a janela dentro do clique do usuário para evitar bloqueio de pop-up.
+      const whatsappWindow = window.open("about:blank", "_blank");
 
       try {
         const response = await fetch(`${config.url}/rest/v1/appointments`, {
@@ -140,20 +142,25 @@
           `Serviço: ${servicesText}`,
           `Data: ${dateText}`,
           `Horário: ${timeText}`,
+          `Valor estimado: R$ ${total.toFixed(2).replace('.', ',')}`,
           "",
           "Entre no Painel ADM para visualizar os dados completos e confirmar o atendimento.",
         ].join("\n");
         const whatsappUrl = `https://wa.me/${studioPhone}?text=${encodeURIComponent(message)}`;
 
-        modal.querySelector(".request-card").innerHTML = `<h3>Solicitação enviada ✓</h3><p>Sua solicitação foi registrada no Studio. Agora você será direcionada ao WhatsApp para avisar a equipe.</p><div class="request-summary"><strong>Data</strong><span>${esc(dateText)} às ${esc(timeText)}</span><br><strong>Serviço</strong><span>${esc(servicesText)}</span></div>`;
-        setTimeout(() => {
+        if (whatsappWindow && !whatsappWindow.closed) {
+          whatsappWindow.location.href = whatsappUrl;
+        } else {
           window.location.href = whatsappUrl;
-        }, 350);
+        }
+
+        modal.querySelector(".request-card").innerHTML = `<h3>Solicitação registrada ✓</h3><p>Seu pedido foi registrado no Studio. O WhatsApp será aberto para avisar a equipe.</p><div class="request-summary"><strong>Data</strong><span>${esc(dateText)} às ${esc(timeText)}</span><br><strong>Serviço</strong><span>${esc(servicesText)}</span></div>`;
       } catch (error) {
+        if (whatsappWindow && !whatsappWindow.closed) whatsappWindow.close();
         console.error(error);
         errorBox.textContent = error.message || "Não foi possível enviar a solicitação. Tente novamente.";
         submit.disabled = false;
-        submit.textContent = "Solicitar atendimento";
+        submit.textContent = "Confirmar solicitação";
       }
     });
 
