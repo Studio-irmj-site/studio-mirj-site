@@ -1,0 +1,12 @@
+(()=>{'use strict';
+const $=id=>document.getElementById(id);
+const esc=v=>String(v??'').replace(/[&<>\"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[m]));
+function enhance(){const content=$('content');if(!content||!$('dateFilter')||!$('appointmentList'))return;if($('agendaOrganizer'))return;
+ const bar=document.createElement('div');bar.id='agendaOrganizer';bar.className='agenda-organizer';bar.innerHTML='<div class="agenda-tabs"><button type="button" class="agenda-tab active" data-agenda="day">Dia</button><button type="button" class="agenda-tab" data-agenda="week">Semana</button><button type="button" class="agenda-tab" data-agenda="month">Mês</button></div><div class="agenda-summary" id="agendaSummary"></div>';
+ const filter=$('dateFilter').parentElement;filter?.parentElement?.insertBefore(bar,filter.nextSibling);
+ document.querySelectorAll('[data-agenda]').forEach(b=>b.onclick=()=>setMode(b.dataset.agenda));setMode('day');
+}
+function setMode(mode){const input=$('dateFilter');if(!input)return;document.querySelectorAll('[data-agenda]').forEach(b=>b.classList.toggle('active',b.dataset.agenda===mode));const date=input.value||new Date().toLocaleDateString('en-CA');const d=new Date(date+'T12:00:00');if(mode==='day')input.value=date;else if(mode==='week'){const day=(d.getDay()+6)%7;d.setDate(d.getDate()-day);input.value=d.toLocaleDateString('en-CA')}else{d.setDate(1);input.value=d.toLocaleDateString('en-CA')}input.dispatchEvent(new Event('change',{bubbles:true}));setTimeout(summary,100)}
+function summary(){const list=$('appointmentList');const s=$('agendaSummary');if(!list||!s)return;const rows=[...list.querySelectorAll('.service')];const confirmed=rows.filter(r=>r.querySelector('.status')?.value==='confirmado').length;const pending=rows.filter(r=>r.querySelector('.status')?.value==='agendado').length;const done=rows.filter(r=>r.querySelector('.status')?.value==='concluido').length;s.innerHTML='<span><strong>'+rows.length+'</strong> atendimento(s)</span><span><strong>'+confirmed+'</strong> confirmado(s)</span><span><strong>'+pending+'</strong> pendente(s)</span><span><strong>'+done+'</strong> concluído(s)</span>'}
+const obs=new MutationObserver(()=>{if($('dateFilter')&&!$('agendaOrganizer'))enhance();if($('agendaOrganizer'))summary()});obs.observe(document.body,{childList:true,subtree:true});document.addEventListener('click',()=>setTimeout(()=>{if($('dateFilter')&&!$('agendaOrganizer'))enhance()},0));
+})();
