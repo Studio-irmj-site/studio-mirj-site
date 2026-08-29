@@ -24,11 +24,14 @@
   }
 
   async function loadAvailability() {
-    const response = await fetch(`${config.url}/rest/v1/appointment_availability?select=id,available_date,available_time,active&active=eq.true&available_date=gte.${encodeURIComponent(localDateValue())}&order=available_date.asc,available_time.asc`, {
+    const response = await fetch(`${config.url}/rest/v1/rpc/get_public_available_slots`, {
+      method: "POST",
       headers: {
         apikey: config.anonKey,
         Authorization: `Bearer ${config.anonKey}`,
+        "Content-Type": "application/json",
       },
+      body: JSON.stringify({ p_from_date: localDateValue() }),
     });
     if (!response.ok) throw new Error("Não foi possível carregar os horários disponíveis.");
     return response.json();
@@ -150,52 +153,48 @@
         return;
       }
 
-      const allowed = availabilityRows.some((row) => row.available_date === date && timeValue(row.available_time) === time && row.active === true);
+      const allowed = availabilityRows.some((row) => row.available_date === date && timeValue(row.available_time) === time);
       if (!allowed) {
-        errorBox.textContent = "Esse horário não está mais disponível. Atualize a disponibilidade e tente novamente.";
+        errorBox.textContent = "Esse horário não está mais disponível. Atualize a página e tente novamente.";
         return;
       }
 
-      const requestedAt = new Date(`${date}T${time}:00`);
-      if (Number.isNaN(requestedAt.getTime()) || requestedAt <= new Date()) {
-        errorBox.textContent = "Escolha uma data e horário futuros.";
-        return;
-      }
-
-      const serviceId = items[0]?.id || null;
       submit.disabled = true;
       submit.textContent = "Registrando…";
       errorBox.textContent = "";
 
       try {
-        const response = await fetch(`${config.url}/rest/v1/appointments`, {
+        const response = await fetch(`${config.url}/rest/v1/rpc/create_appointment_request`, {
           method: "POST",
           headers: {
             apikey: config.anonKey,
             Authorization: `Bearer ${config.anonKey}`,
             "Content-Type": "application/json",
-            Prefer: "return=minimal",
           },
           body: JSON.stringify({
-            client_name: name,
-            client_phone: phone,
-            service_id: serviceId,
-            service_name: servicesText,
-            amount: Number(total.toFixed(2)),
-            appointment_at: requestedAt.toISOString(),
-            status: "agendado",
-            request_status: "pendente",
-            notes: `Nova solicitação pelo site. Serviços: ${servicesText}. Aguardando confirmação do Studio.`,
-            counted_as_revenue: false,
+            p_client_name: name,
+            p_client_phone: phone,
+            p_service_id: items[0]?.id || null,
+            p_service_name: servicesText,
+            p_amount: Number(total.toFixed(2)),
+            p_available_date: date,
+            p_available_time: `${time}:00`,
+            p_notes: `Nova solicitação pelo site. Serviços: ${servicesText}. Aguardando confirmação do Studio.`,
           }),
         });
 
         if (!response.ok) {
           const detail = await response.text().catch(() => "");
+          if (/HORARIO_INDISPONIVEL/i.test(detail)) {
+            availabilityRows = await loadAvailability();
+            populateAvailability(availabilityRows, dateSelect, timeSelect);
+            throw new Error("Esse horário acabou de ser reservado. Escolha outro horário disponível.");
+          }
           throw new Error(`Não foi possível registrar a solicitação (${response.status}). ${detail}`);
         }
 
         const studioPhone = (window.SUPABASE_STUDIO_PHONE || "5511986344770").replace(/\D/g, "");
+        const requestedAt = new Date(`${date}T${time}:00-03:00`);
         const dateText = requestedAt.toLocaleDateString("pt-BR");
         const timeText = requestedAt.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
         const message = [
