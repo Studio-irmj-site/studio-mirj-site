@@ -154,6 +154,14 @@ button:disabled { cursor: wait; opacity: .65; }
 .delete-icon { width: 52px; height: 52px; display: grid; place-items: center; margin: 0 auto; border-radius: 50%; background: #fde8ee; color: #a02b4e; font: 700 23px 'Playfair Display'; }
 .danger-button { padding: 11px 16px; border-radius: 10px; background: #a02b4e; color: #fff; font-weight: 700; }
 
+.receipt-action { background: #edf8f1; color: #267149; }
+.receipt-action:hover { background: #dff2e6; }
+.receipt-summary { margin: 18px 0; padding: 15px; border: 1px solid var(--line); border-radius: 14px; background: #fdf9fa; text-align: left; }
+.receipt-summary strong, .receipt-summary span { display: block; }
+.receipt-summary span { margin-top: 5px; color: var(--muted); font-size: 12px; }
+.receipt-whatsapp { background: #218a55; }
+.receipt-whatsapp:hover { background: #197344; }
+
 .admin-toast { position: fixed; right: 24px; bottom: 24px; z-index: 1200; max-width: min(380px, calc(100vw - 48px)); padding: 14px 18px; border-radius: 13px; background: #267149; color: #fff; box-shadow: 0 15px 40px #18352338; font-size: 13px; font-weight: 700; opacity: 0; transform: translateY(14px); transition: .22s ease; }
 .admin-toast.error { background: #a02b4e; }
 .admin-toast.show { opacity: 1; transform: translateY(0); }
