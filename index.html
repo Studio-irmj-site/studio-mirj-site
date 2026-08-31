@@ -10,10 +10,123 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="site.css">
+    <style>
+      /* Organização visual — etapa 1: layout. Mantém IDs e integrações existentes. */
+      .site-header {
+        position: sticky;
+        top: 0;
+        z-index: 15;
+        border-bottom: 1px solid rgba(75,22,48,.07);
+        background: rgba(248,243,255,.82);
+        backdrop-filter: blur(18px);
+        -webkit-backdrop-filter: blur(18px);
+      }
+
+      .hero { padding-top: 28px; }
+
+      .hero__card {
+        grid-template-columns: minmax(0, 1fr) 230px;
+        gap: 36px;
+      }
+
+      .hero__side {
+        position: relative;
+        z-index: 2;
+        display: grid;
+        gap: 12px;
+        align-self: stretch;
+        align-content: center;
+      }
+
+      .hero__seal { position: relative; inset: auto; margin-inline: auto; }
+
+      .hero__quick-card {
+        border: 1px solid rgba(155,47,87,.12);
+        border-radius: 20px;
+        padding: 15px;
+        background: rgba(255,255,255,.62);
+        box-shadow: 0 12px 32px rgba(75,22,48,.07);
+      }
+
+      .hero__quick-card small {
+        display: block;
+        margin-bottom: 5px;
+        color: var(--muted);
+        font-size: 9px;
+        font-weight: 700;
+        letter-spacing: .12em;
+        text-transform: uppercase;
+      }
+
+      .hero__quick-card strong {
+        color: var(--wine);
+        font-family: "Playfair Display", serif;
+        font-size: 17px;
+      }
+
+      .layout-divider {
+        width: min(calc(100% - 40px), var(--shell));
+        height: 1px;
+        margin: 2px auto 0;
+        background: linear-gradient(90deg, transparent, var(--line-strong), transparent);
+      }
+
+      .services-section {
+        margin-top: 10px;
+        border: 1px solid rgba(75,22,48,.08);
+        border-radius: 30px;
+        padding: 34px;
+        background: rgba(255,255,255,.48);
+        box-shadow: 0 18px 55px rgba(75,22,48,.05);
+      }
+
+      .services-section.shell { width: min(calc(100% - 40px), var(--shell)); }
+
+      .visit { padding-top: 54px; }
+
+      .visit__grid { align-items: stretch; }
+
+      .info-card {
+        transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+      }
+
+      .info-card:hover {
+        transform: translateY(-2px);
+        border-color: rgba(217,77,120,.28);
+        box-shadow: var(--shadow-sm);
+      }
+
+      @media (max-width: 760px) {
+        .site-header { position: relative; }
+        .hero { padding-top: 12px; }
+        .hero__card {
+          grid-template-columns: 1fr;
+          min-height: 0;
+          align-items: start;
+          padding: 30px 25px;
+        }
+        .hero__side {
+          grid-template-columns: auto 1fr;
+          align-items: center;
+          margin-top: 10px;
+        }
+        .hero__seal { width: 92px; height: 92px; }
+        .hero__quick-card { min-height: 92px; display: grid; align-content: center; }
+        .services-section { padding: 25px 18px; border-radius: 24px; }
+        .services-section.shell { width: min(calc(100% - 30px), var(--shell)); }
+        .layout-divider { width: min(calc(100% - 30px), var(--shell)); }
+      }
+
+      @media (max-width: 430px) {
+        .hero__side { grid-template-columns: 1fr; }
+        .hero__seal { display: none; }
+      }
+    </style>
   </head>
   <body>
     <div class="page-glow page-glow--top" aria-hidden="true"></div>
     <div class="page-glow page-glow--bottom" aria-hidden="true"></div>
+
     <header class="site-header">
       <div class="shell site-header__inner">
         <div class="brand" aria-label="Studio I.R">
@@ -23,6 +136,7 @@
         <a class="instagram-link" id="instagramLink" href="https://www.instagram.com/iarytsa_e_raquel" target="_blank" rel="noopener noreferrer"><span aria-hidden="true">◎</span><span id="instagram">@iarytsa_e_raquel</span></a>
       </div>
     </header>
+
     <main>
       <section class="hero shell" aria-labelledby="heroTitle">
         <div class="hero__card">
@@ -32,9 +146,23 @@
             <p class="hero__text" id="tagline">Selecione os serviços que deseja, confira a estimativa e envie tudo para nós pelo WhatsApp.</p>
             <div class="hero__benefits" aria-label="Como funciona"><span><b>1</b> Escolha</span><span><b>2</b> Confira</span><span><b>3</b> Envie</span></div>
           </div>
-          <div class="hero__seal" aria-hidden="true"><span>feito para</span><strong>você</strong><i>✦</i></div>
+
+          <aside class="hero__side" aria-label="Resumo do atendimento">
+            <div class="hero__seal" aria-hidden="true"><span>feito para</span><strong>você</strong><i>✦</i></div>
+            <div class="hero__quick-card">
+              <small>Atendimento</small>
+              <strong>Com horário reservado</strong>
+            </div>
+            <div class="hero__quick-card">
+              <small>Orçamento</small>
+              <strong>Rápido e sem compromisso</strong>
+            </div>
+          </aside>
         </div>
       </section>
+
+      <div class="layout-divider" aria-hidden="true"></div>
+
       <section class="services-section shell" aria-labelledby="servicesTitle">
         <div class="section-heading"><div><p class="section-kicker">Monte seu orçamento</p><h2 id="servicesTitle">Quais serviços você deseja?</h2></div><p>Você pode selecionar mais de uma opção.</p></div>
         <nav class="category-filter" id="tabs" aria-label="Categorias de serviços"></nav>
@@ -42,6 +170,7 @@
         <div class="services-grid" id="services" aria-busy="true"><div class="service-skeleton" aria-hidden="true"></div><div class="service-skeleton" aria-hidden="true"></div><div class="service-skeleton" aria-hidden="true"></div><div class="service-skeleton" aria-hidden="true"></div></div>
         <aside class="estimate-note"><span class="estimate-note__icon" aria-hidden="true">i</span><p><strong>Sobre o valor exibido</strong>Esta é uma estimativa com base nos serviços escolhidos. Detalhes, disponibilidade e valor final são confirmados pelo WhatsApp.</p></aside>
       </section>
+
       <section class="visit shell" aria-labelledby="visitTitle">
         <div class="section-heading section-heading--compact"><div><p class="section-kicker">Antes de agendar</p><h2 id="visitTitle">Informações do Studio</h2></div></div>
         <div class="visit__grid">
@@ -51,13 +180,16 @@
         </div>
       </section>
     </main>
+
     <footer class="site-footer shell">
       <div class="brand brand--footer"><span class="brand__mark" aria-hidden="true"><span class="brand__monogram"><span class="brand__initial">I</span><span class="brand__ampersand">&amp;</span><span class="brand__initial">R</span></span></span><span class="brand__copy"><strong id="footerName">Studio I.R — Iarytsa e Raquel</strong><small>Beleza, cuidado e autoestima.</small></span></div>
       <p>Atendimento com horário reservado e confirmação prévia.</p>
     </footer>
+
     <div class="quote-bar" aria-label="Resumo do orçamento">
       <div class="quote-bar__inner shell"><div class="quote-summary" aria-live="polite"><span id="count">Nenhum serviço selecionado</span><strong id="total">Escolha seus serviços</strong></div><button class="clear-button" id="clearButton" type="button" hidden>Limpar</button><a class="whatsapp-button" id="ctaButton" href="https://wa.me/5511986344770" target="_blank" rel="noopener noreferrer"><span class="whatsapp-button__icon" aria-hidden="true">◔</span><span id="ctaLabel">Falar no WhatsApp</span><span aria-hidden="true">→</span></a></div>
     </div>
+
     <noscript><p class="noscript-message">Ative o JavaScript do navegador para visualizar os serviços e montar seu orçamento.</p></noscript>
     <script src="supabase-config.js"></script>
     <script src="site.js"></script>
