@@ -11,16 +11,58 @@
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="site.css">
     <style>
-      /* Organização visual — etapa 1: layout. Mantém IDs e integrações existentes. */
+      /* Etapa 1: layout */
       .site-header {
         position: sticky;
         top: 0;
         z-index: 15;
         border-bottom: 1px solid rgba(75,22,48,.07);
-        background: rgba(248,243,255,.82);
+        background: rgba(248,243,255,.9);
         backdrop-filter: blur(18px);
         -webkit-backdrop-filter: blur(18px);
       }
+
+      .site-header__inner { flex-wrap: wrap; }
+
+      /* Etapa 2: menu */
+      .main-nav {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        margin-left: auto;
+      }
+
+      .main-nav a {
+        display: inline-flex;
+        min-height: 38px;
+        align-items: center;
+        justify-content: center;
+        border-radius: 999px;
+        padding: 0 12px;
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 700;
+        text-decoration: none;
+        transition: background 160ms ease, color 160ms ease, transform 160ms ease;
+      }
+
+      .main-nav a:hover,
+      .main-nav a:focus-visible {
+        background: rgba(217,77,120,.08);
+        color: var(--rose-700);
+        transform: translateY(-1px);
+      }
+
+      .main-nav__cta {
+        border: 1px solid rgba(217,77,120,.2);
+        background: var(--rose-500) !important;
+        color: #fff !important;
+        box-shadow: 0 8px 22px rgba(217,77,120,.18);
+      }
+
+      .main-nav__cta:hover { filter: brightness(1.03); }
+
+      .instagram-link { margin-left: 4px; }
 
       .hero { padding-top: 28px; }
 
@@ -78,12 +120,12 @@
         padding: 34px;
         background: rgba(255,255,255,.48);
         box-shadow: 0 18px 55px rgba(75,22,48,.05);
+        scroll-margin-top: 110px;
       }
 
       .services-section.shell { width: min(calc(100% - 40px), var(--shell)); }
 
-      .visit { padding-top: 54px; }
-
+      .visit { padding-top: 54px; scroll-margin-top: 110px; }
       .visit__grid { align-items: stretch; }
 
       .info-card {
@@ -96,8 +138,22 @@
         box-shadow: var(--shadow-sm);
       }
 
+      @media (max-width: 860px) {
+        .site-header__inner { row-gap: 10px; }
+        .main-nav {
+          order: 3;
+          width: 100%;
+          overflow-x: auto;
+          padding-bottom: 2px;
+          scrollbar-width: none;
+        }
+        .main-nav::-webkit-scrollbar { display: none; }
+        .main-nav a { flex: 0 0 auto; }
+      }
+
       @media (max-width: 760px) {
-        .site-header { position: relative; }
+        .site-header { position: sticky; }
+        .instagram-link { max-width: 132px; }
         .hero { padding-top: 12px; }
         .hero__card {
           grid-template-columns: 1fr;
@@ -118,21 +174,33 @@
       }
 
       @media (max-width: 430px) {
+        .brand__copy small { display: none; }
+        .instagram-link { display: none; }
+        .main-nav { gap: 6px; }
+        .main-nav a { min-height: 36px; padding-inline: 11px; font-size: 11px; }
         .hero__side { grid-template-columns: 1fr; }
         .hero__seal { display: none; }
       }
     </style>
   </head>
-  <body>
+  <body id="inicio">
     <div class="page-glow page-glow--top" aria-hidden="true"></div>
     <div class="page-glow page-glow--bottom" aria-hidden="true"></div>
 
     <header class="site-header">
       <div class="shell site-header__inner">
-        <div class="brand" aria-label="Studio I.R">
+        <a class="brand" href="#inicio" aria-label="Voltar ao início — Studio I.R" style="text-decoration:none">
           <span class="brand__mark" aria-hidden="true"><span class="brand__monogram"><span class="brand__initial">I</span><span class="brand__ampersand">&amp;</span><span class="brand__initial">R</span></span></span>
           <span class="brand__copy"><strong id="brandName">Studio I.R</strong><small class="brand__slogan">Elegância &amp; Cuidado</small></span>
-        </div>
+        </a>
+
+        <nav class="main-nav" aria-label="Menu principal">
+          <a href="#inicio">Início</a>
+          <a href="#servicos">Serviços</a>
+          <a href="#studio">O Studio</a>
+          <a class="main-nav__cta" href="#servicos">Fazer orçamento</a>
+        </nav>
+
         <a class="instagram-link" id="instagramLink" href="https://www.instagram.com/iarytsa_e_raquel" target="_blank" rel="noopener noreferrer"><span aria-hidden="true">◎</span><span id="instagram">@iarytsa_e_raquel</span></a>
       </div>
     </header>
@@ -149,21 +217,15 @@
 
           <aside class="hero__side" aria-label="Resumo do atendimento">
             <div class="hero__seal" aria-hidden="true"><span>feito para</span><strong>você</strong><i>✦</i></div>
-            <div class="hero__quick-card">
-              <small>Atendimento</small>
-              <strong>Com horário reservado</strong>
-            </div>
-            <div class="hero__quick-card">
-              <small>Orçamento</small>
-              <strong>Rápido e sem compromisso</strong>
-            </div>
+            <div class="hero__quick-card"><small>Atendimento</small><strong>Com horário reservado</strong></div>
+            <div class="hero__quick-card"><small>Orçamento</small><strong>Rápido e sem compromisso</strong></div>
           </aside>
         </div>
       </section>
 
       <div class="layout-divider" aria-hidden="true"></div>
 
-      <section class="services-section shell" aria-labelledby="servicesTitle">
+      <section class="services-section shell" id="servicos" aria-labelledby="servicesTitle">
         <div class="section-heading"><div><p class="section-kicker">Monte seu orçamento</p><h2 id="servicesTitle">Quais serviços você deseja?</h2></div><p>Você pode selecionar mais de uma opção.</p></div>
         <nav class="category-filter" id="tabs" aria-label="Categorias de serviços"></nav>
         <div class="services-status" id="servicesStatus" role="status" aria-live="polite">Carregando serviços disponíveis…</div>
@@ -171,7 +233,7 @@
         <aside class="estimate-note"><span class="estimate-note__icon" aria-hidden="true">i</span><p><strong>Sobre o valor exibido</strong>Esta é uma estimativa com base nos serviços escolhidos. Detalhes, disponibilidade e valor final são confirmados pelo WhatsApp.</p></aside>
       </section>
 
-      <section class="visit shell" aria-labelledby="visitTitle">
+      <section class="visit shell" id="studio" aria-labelledby="visitTitle">
         <div class="section-heading section-heading--compact"><div><p class="section-kicker">Antes de agendar</p><h2 id="visitTitle">Informações do Studio</h2></div></div>
         <div class="visit__grid">
           <article class="info-card info-card--wide"><span class="info-card__icon" aria-hidden="true">⌖</span><div><small>Endereço</small><strong id="addressTitle">Jundiaí – SP</strong><p id="address">Av. Presbítero Manoel Antônio Dias Filho, 1420</p></div></article>
