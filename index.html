@@ -61,9 +61,7 @@
       }
 
       .main-nav__cta:hover { filter: brightness(1.03); }
-
       .instagram-link { margin-left: 4px; }
-
       .hero { padding-top: 28px; }
 
       .hero__card {
@@ -125,6 +123,94 @@
 
       .services-section.shell { width: min(calc(100% - 40px), var(--shell)); }
 
+      /* Etapa 3: serviços */
+      .service-guide {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
+        margin: -4px 0 24px;
+      }
+
+      .service-guide__item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-height: 68px;
+        border: 1px solid rgba(75,22,48,.09);
+        border-radius: 17px;
+        padding: 12px 13px;
+        background: rgba(255,255,255,.72);
+      }
+
+      .service-guide__item b {
+        display: grid;
+        width: 30px;
+        height: 30px;
+        place-items: center;
+        flex: 0 0 auto;
+        border-radius: 50%;
+        background: var(--rose-50);
+        color: var(--rose-700);
+        font-size: 12px;
+      }
+
+      .service-guide__item span {
+        color: var(--muted);
+        font-size: 11px;
+        line-height: 1.35;
+      }
+
+      .service-guide__item strong {
+        display: block;
+        margin-bottom: 2px;
+        color: var(--wine);
+        font-size: 12px;
+      }
+
+      .category-filter {
+        margin-bottom: 4px;
+        border-bottom: 1px solid rgba(75,22,48,.08);
+        padding-bottom: 13px;
+      }
+
+      .category-button {
+        min-height: 40px;
+        padding-inline: 17px;
+        box-shadow: 0 5px 14px rgba(75,22,48,.04);
+      }
+
+      .services-status {
+        margin: 10px 0 14px;
+        font-weight: 600;
+      }
+
+      .service-card {
+        min-height: 150px;
+        border-radius: 22px;
+        padding: 19px;
+      }
+
+      .service-card__copy strong { font-size: 15px; }
+      .service-card__copy p { max-width: 310px; font-size: 11.5px; }
+      .service-card__price strong { font-size: 15px; }
+
+      .service-card[aria-pressed="true"]::after {
+        position: absolute;
+        right: 14px;
+        bottom: 12px;
+        border-radius: 999px;
+        padding: 4px 8px;
+        background: rgba(217,77,120,.1);
+        color: var(--rose-700);
+        content: "Selecionado";
+        font-size: 8px;
+        font-weight: 800;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+      }
+
+      .estimate-note { margin-top: 22px; }
+
       .visit { padding-top: 54px; scroll-margin-top: 110px; }
       .visit__grid { align-items: stretch; }
 
@@ -149,6 +235,7 @@
         }
         .main-nav::-webkit-scrollbar { display: none; }
         .main-nav a { flex: 0 0 auto; }
+        .service-guide { grid-template-columns: 1fr; }
       }
 
       @media (max-width: 760px) {
@@ -171,6 +258,8 @@
         .services-section { padding: 25px 18px; border-radius: 24px; }
         .services-section.shell { width: min(calc(100% - 30px), var(--shell)); }
         .layout-divider { width: min(calc(100% - 30px), var(--shell)); }
+        .service-guide__item { min-height: 58px; }
+        .service-card { min-height: 138px; }
       }
 
       @media (max-width: 430px) {
@@ -180,6 +269,7 @@
         .main-nav a { min-height: 36px; padding-inline: 11px; font-size: 11px; }
         .hero__side { grid-template-columns: 1fr; }
         .hero__seal { display: none; }
+        .service-guide { gap: 8px; }
       }
     </style>
   </head>
@@ -227,6 +317,13 @@
 
       <section class="services-section shell" id="servicos" aria-labelledby="servicesTitle">
         <div class="section-heading"><div><p class="section-kicker">Monte seu orçamento</p><h2 id="servicesTitle">Quais serviços você deseja?</h2></div><p>Você pode selecionar mais de uma opção.</p></div>
+
+        <div class="service-guide" aria-label="Como escolher os serviços">
+          <div class="service-guide__item"><b>1</b><span><strong>Escolha a categoria</strong>Use os filtros abaixo para encontrar mais rápido.</span></div>
+          <div class="service-guide__item"><b>2</b><span><strong>Selecione os serviços</strong>Toque em um ou mais serviços que deseja.</span></div>
+          <div class="service-guide__item"><b>3</b><span><strong>Confira a estimativa</strong>O resumo aparece na barra inferior da tela.</span></div>
+        </div>
+
         <nav class="category-filter" id="tabs" aria-label="Categorias de serviços"></nav>
         <div class="services-status" id="servicesStatus" role="status" aria-live="polite">Carregando serviços disponíveis…</div>
         <div class="services-grid" id="services" aria-busy="true"><div class="service-skeleton" aria-hidden="true"></div><div class="service-skeleton" aria-hidden="true"></div><div class="service-skeleton" aria-hidden="true"></div><div class="service-skeleton" aria-hidden="true"></div></div>
