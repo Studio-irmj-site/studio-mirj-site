@@ -1,18 +1,19 @@
 "use strict";
 
 const DEFAULT_PHONE = "5511986344770";
+const DEFAULT_STUDIO_NAME = "Espaço I.R";
 const config = window.SUPABASE_CONFIG || {};
 
 const elements = {
   tabs: document.querySelector("#tabs"), services: document.querySelector("#services"), servicesStatus: document.querySelector("#servicesStatus"), count: document.querySelector("#count"), total: document.querySelector("#total"), clearButton: document.querySelector("#clearButton"), ctaButton: document.querySelector("#ctaButton"), ctaLabel: document.querySelector("#ctaLabel"),
 };
 const state = { services: [], selectedIds: new Set(), activeCategory: "Todos", phone: DEFAULT_PHONE };
-const categoryIcons = { Manicure: "M", Alongamento: "A", Decorações: "✦", Pedicure: "P" };
+const categoryIcons = { Manicure: "M", Alongamento: "A", Decorações: "D", Pedicure: "P", Blindagem: "B", "Spa dos Pés": "S" };
 const formatMoney = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
 function serviceId(service) { return String(service.id); }
 function selectedServices() { return state.services.filter((service) => state.selectedIds.has(serviceId(service))); }
 function selectedTotal() { return selectedServices().reduce((sum, service) => sum + Number(service.price || 0), 0); }
-function studioName() { return document.querySelector("#brandName").textContent.trim() || "Studio I.R"; }
+function studioName() { return document.querySelector("#brandName").textContent.trim() || DEFAULT_STUDIO_NAME; }
 function whatsappMessage() {
   const chosen = selectedServices();
   if (!chosen.length) return `Olá! Vim pelo site do ${studioName()} e gostaria de saber mais sobre os serviços e horários.`;
@@ -40,7 +41,7 @@ function renderCategoryFilters() {
   });
 }
 function createServiceCard(service) {
-  const id = serviceId(service); const selected = state.selectedIds.has(id); const card = document.createElement("button"); const icon = categoryIcons[service.category] || "✦";
+  const id = serviceId(service); const selected = state.selectedIds.has(id); const card = document.createElement("button"); const icon = categoryIcons[service.category] || "IR";
   card.className = "service-card"; card.type = "button"; card.dataset.serviceId = id; card.setAttribute("aria-pressed", String(selected)); card.setAttribute("aria-label", `${selected ? "Remover" : "Adicionar"} ${service.name}, ${formatMoney.format(Number(service.price || 0))}`);
   const iconElement = document.createElement("span"); iconElement.className = "service-card__icon"; iconElement.setAttribute("aria-hidden", "true"); iconElement.textContent = icon;
   const copy = document.createElement("span"); copy.className = "service-card__copy";
@@ -89,7 +90,7 @@ function normalizePhone(phone) { const digits = String(phone || "").replace(/\D/
 function updateInstagram(value) { const handle = String(value || "").trim().replace(/^@/, ""); if (!handle) return; document.querySelector("#instagram").textContent = `@${handle}`; document.querySelector("#instagramLink").href = `https://www.instagram.com/${encodeURIComponent(handle)}`; }
 function applyStudioSettings(settings) {
   if (!settings) return;
-  if (settings.studio_name) { document.title = `${settings.studio_name} — Monte seu orçamento`; document.querySelector("#brandName").textContent = settings.studio_name; document.querySelector("#footerName").textContent = `${settings.studio_name} — Iarytsa e Raquel`; }
+  if (settings.studio_name) { document.title = `${settings.studio_name} — Monte seu orçamento`; document.querySelector("#brandName").textContent = settings.studio_name; document.querySelector("#footerName").textContent = settings.studio_name; }
   if (settings.whatsapp) state.phone = normalizePhone(settings.whatsapp); if (settings.instagram) updateInstagram(settings.instagram);
   if (settings.city) { document.querySelector("#city").textContent = settings.city; document.querySelector("#addressTitle").textContent = settings.city; }
   if (settings.address) document.querySelector("#address").textContent = settings.address;
@@ -99,7 +100,7 @@ function applyStudioSettings(settings) {
 }
 async function loadStudioSettings() {
   try { const settings = await fetchTable("/studio_settings?select=studio_name,whatsapp,instagram,city,address,hours,tagline&id=eq.1"); applyStudioSettings(settings[0]); }
-  catch (error) { console.warn("Configurações do Studio indisponíveis; usando os dados padrão.", error); }
+  catch (error) { console.warn("Configurações do Espaço indisponíveis; usando os dados padrão.", error); }
 }
 elements.clearButton.addEventListener("click", () => { state.selectedIds.clear(); renderServices(); updateQuoteSummary(); });
 // O fluxo de orçamento/agendamento é controlado por quote-register.js.
