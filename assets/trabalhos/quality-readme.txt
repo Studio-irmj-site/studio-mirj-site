@@ -1,0 +1,1 @@
+Imagens da galeria processadas para melhor nitidez, enquadramento 2:3 e compressão progressiva para web.
