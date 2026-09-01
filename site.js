@@ -251,6 +251,24 @@ async function loadStudioSettings() {
   }
 }
 
+async function loadFibraDeVidroGalleryImage() {
+  const card = document.querySelectorAll(".work-card")[2];
+  if (!card) return;
+  const image = card.querySelector("img");
+  const caption = card.querySelector(".work-card__caption");
+  if (!image || !caption) return;
+  try {
+    const response = await fetch("assets/trabalhos/fibra-de-vidro-small.b64.txt", { cache: "no-store" });
+    if (!response.ok) throw new Error(`Falha ao carregar imagem (${response.status}).`);
+    const encoded = (await response.text()).trim();
+    image.src = `data:image/jpeg;base64,${encoded}`;
+    image.alt = "Alongamento em fibra de vidro rosa realizado no Espaço I.R";
+    caption.innerHTML = "<span>✦</span>Fibra de Vidro";
+  } catch (error) {
+    console.warn("Não foi possível substituir a imagem da galeria por fibra de vidro.", error);
+  }
+}
+
 elements.clearButton.addEventListener("click", () => {
   state.selectedIds.clear();
   renderServices();
@@ -260,3 +278,4 @@ elements.clearButton.addEventListener("click", () => {
 updateQuoteSummary();
 loadServices();
 loadStudioSettings();
+loadFibraDeVidroGalleryImage();
