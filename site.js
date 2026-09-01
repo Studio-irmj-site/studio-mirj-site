@@ -251,6 +251,25 @@ async function loadStudioSettings() {
   }
 }
 
+async function loadSplitBase64Image(cardIndex, filePrefix, altText, captionHtml, partCount) {
+  const card = document.querySelectorAll(".work-card")[cardIndex];
+  if (!card) return;
+  const image = card.querySelector("img");
+  const caption = card.querySelector(".work-card__caption");
+  if (!image) return;
+  try {
+    const requests = Array.from({ length: partCount }, (_, index) => fetch(`${filePrefix}.part${index + 1}.txt`, { cache: "no-store" }));
+    const responses = await Promise.all(requests);
+    if (responses.some((response) => !response.ok)) throw new Error("Falha ao carregar uma parte da imagem.");
+    const parts = await Promise.all(responses.map((response) => response.text()));
+    image.src = `data:image/jpeg;base64,${parts.map((part) => part.trim()).join("")}`;
+    image.alt = altText;
+    if (caption && captionHtml) caption.innerHTML = captionHtml;
+  } catch (error) {
+    console.warn("Não foi possível carregar a imagem da galeria.", error);
+  }
+}
+
 async function loadFibraDeVidroGalleryImage() {
   const card = document.querySelectorAll(".work-card")[2];
   if (!card) return;
@@ -278,4 +297,5 @@ elements.clearButton.addEventListener("click", () => {
 updateQuoteSummary();
 loadServices();
 loadStudioSettings();
+loadSplitBase64Image(0, "assets/trabalhos/unhas-naturais-01", "Pedicure com esmaltação vinho realizada no Espaço I.R", "<span>♢</span>Unhas Naturais", 7);
 loadFibraDeVidroGalleryImage();
