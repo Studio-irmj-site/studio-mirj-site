@@ -13,12 +13,14 @@ function generate(o){
  if(o.repeat&&(!o.weekdays?.length||o.weekdays.some(v=>!Number.isInteger(v)||v<0||v>6)))throw new Error('Selecione pelo menos um dia da semana.');
  const times=[];for(let t=start;t<end;t+=step){if(o.pause&&t>=pauseStart&&t<pauseEnd)continue;times.push(String(Math.floor(t/60)).padStart(2,'0')+':'+String(t%60).padStart(2,'0')+':00');}
  if(!times.length)throw new Error('Essa configuração não gera horários.');
- const rows=[];for(let d=new Date(first);d<=last;d.setUTCDate(d.getUTCDate()+1)){if(o.repeat&&!o.weekdays.includes(d.getUTCDay()))continue;for(const time of times)rows.push({available_date:d.toISOString().slice(0,10),available_time:time,active:true});}
+ const professionals=o.professional==='both'?['raquel','iarytsa']:o.professional?[o.professional]:[null];if(professionals.some(p=>p&&!['raquel','iarytsa'].includes(p)))throw new Error('Selecione uma profissional válida.');
+ const rows=[];for(let d=new Date(first);d<=last;d.setUTCDate(d.getUTCDate()+1)){if(o.repeat&&!o.weekdays.includes(d.getUTCDay()))continue;for(const time of times)for(const professional of professionals)rows.push({available_date:d.toISOString().slice(0,10),available_time:time,active:true,...(professional?{professional}:{})});}
  if(!rows.length)throw new Error('Nenhum dia selecionado existe nesse período.');
  if(rows.length>2000)throw new Error('Gere até 2.000 horários por vez. Reduza o período.');
  return rows;
 }
 const key=r=>r.available_date+'|'+String(r.available_time).slice(0,5);
-function pending(rows,existing){const keys=new Set(existing.map(key));return rows.filter(r=>{const k=key(r);if(keys.has(k))return false;keys.add(k);return true;});}
+function pending(rows,existing){const seen=new Map();const add=r=>{const k=key(r);if(!seen.has(k))seen.set(k,[]);seen.get(k).push(r.professional||null);};existing.forEach(add);return rows.filter(r=>{const professions=seen.get(key(r))||[];if(professions.some(p=>!p||!r.professional||p===r.professional))return false;add(r);return true;});}
+
 const api={generate,pending};if(typeof module!=='undefined'&&module.exports)module.exports=api;else root.AvailabilityGenerator=api;
 })(typeof window!=='undefined'?window:globalThis);

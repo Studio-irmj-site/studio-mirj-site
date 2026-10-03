@@ -29,7 +29,7 @@
   async function loadRequests(status = "pendente") {
     let query = db
       .from("appointments")
-      .select("id,client_name,client_phone,service_name,amount,appointment_at,request_status,status,notes,created_at,updated_at")
+      .select("id,client_name,client_phone,service_name,amount,appointment_at,request_status,status,notes,created_at,updated_at,professional")
       .order("appointment_at", { ascending: true });
 
     if (status !== "todos") query = query.eq("request_status", status);
@@ -151,12 +151,12 @@
         }
 
         list.innerHTML = rows.map((request) => {
-          const confirmation = `Olá, ${request.client_name || "cliente"}! Seu horário no Espaço I.R foi confirmado para ${dateTime(request.appointment_at)}. Serviço: ${request.service_name || "serviço"}.`;
+          const confirmation = `Olá, ${request.client_name || "cliente"}! Seu horário no Espaço I.R foi confirmado para ${dateTime(request.appointment_at)}. Serviço: ${request.service_name || "serviço"}. Profissional: ${window.StudioProfessionals.label(request.professional)}.`;
           return `
             <article class="budget-item" data-request-id="${esc(request.id)}">
               <div class="budget-main">
                 <strong>${esc(request.client_name || "Cliente não informado")}</strong>
-                <div class="budget-meta"><span>${esc(request.client_phone || "Sem WhatsApp")}</span><span>${esc(request.service_name || "Serviço não informado")}</span><span>${dateTime(request.appointment_at)}</span></div>
+                <div class="budget-meta"><span>${esc(request.client_phone || "Sem WhatsApp")}</span><span>${esc(request.service_name || "Serviço não informado")}</span><span>${dateTime(request.appointment_at)}</span><span>${esc(window.StudioProfessionals.label(request.professional))}</span></div>
                 ${request.notes ? `<p class="budget-note">${esc(request.notes)}</p>` : ""}
               </div>
               <div class="budget-value"><strong>${money(request.amount)}</strong><span class="budget-status">${esc(request.request_status || "pendente")}</span></div>
