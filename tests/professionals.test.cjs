@@ -1,0 +1,3 @@
+const {test}=require('node:test');const assert=require('node:assert/strict');const p=require('../professionals.js');
+test('Professional selections and labels',()=>{assert.deepEqual(p.expand('both'),['raquel','iarytsa']);assert.deepEqual(p.expand('raquel'),['raquel']);assert.equal(p.label('iarytsa'),'Iarytsa');assert.deepEqual(p.expand('invalid'),[]);});
+test('Independent professionals and conservative legacy conflicts',()=>{assert.equal(p.conflicts({professional:'raquel'},{professional:'iarytsa'}),false);assert.equal(p.conflicts({professional:'raquel'},{professional:'raquel'}),true);assert.equal(p.conflicts({professional:null},{professional:'iarytsa'}),true);});

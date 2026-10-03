@@ -39,7 +39,7 @@
 
   async function loadAvailability() {
     if (!config.url || !config.anonKey) return [];
-    const response = await fetch(`${config.url}/rest/v1/rpc/get_public_available_slots`, {
+    const response = await fetch(`${config.url}/rest/v1/rpc/get_professional_available_slots`, {
       method: "POST",
       headers: {
         apikey: config.anonKey,
@@ -74,13 +74,14 @@
     return items.map((item) => `${item.quantity}x ${item.name} — ${money(item.price)} cada — subtotal ${money(item.price * item.quantity)}`).join(" | ");
   }
 
-  function buildWhatsAppMessage({ name, phone, items, date, time, notes, registered }) {
+  function buildWhatsAppMessage({ name, phone, items, date, time, professional, notes, registered }) {
     const lines = [
       "Orçamento — Espaço I.R",
       "",
       `Cliente: ${name}`,
       `WhatsApp: ${phone}`,
       `Serviços: ${servicesText(items)}`,
+      `Profissional: ${window.StudioProfessionals.label(professional)}`,
       `Valor estimado: ${money(total(items))}`,
       date ? `Data desejada: ${dateLabel(date)}` : "Data desejada: a combinar",
       time ? `Horário desejado: ${time}` : "Horário desejado: a combinar",
@@ -91,9 +92,9 @@
     return lines.filter(Boolean).join("\n");
   }
 
-  async function tryRegister({ name, phone, items, date, time, notes }) {
+  async function tryRegister({ name, phone, items, date, time, professional, notes }) {
     if (!config.url || !config.anonKey || !date || !time) return false;
-    const response = await fetch(`${config.url}/rest/v1/rpc/create_appointment_request`, {
+    const response = await fetch(`${config.url}/rest/v1/rpc/create_professional_appointment_request`, {
       method: "POST",
       headers: {
         apikey: config.anonKey,
@@ -103,23 +104,17 @@
       body: JSON.stringify({
         p_client_name: name,
         p_client_phone: phone,
-        p_service_id: items.length === 1 ? (items[0]?.id || null) : null,
-        p_service_name: servicesText(items),
-        p_amount: Number(total(items).toFixed(2)),
+        p_items: items.map(item => ({service_id:item.id,quantity:item.quantity})),
+        p_professional: professional,
         p_available_date: date,
         p_available_time: `${time}:00`,
-        p_notes: [
-          `Itens: ${serviceNotes(items)}`,
-          notes ? `Observação da cliente: ${notes}` : "",
-          "Origem: página pública do Espaço I.R.",
-          "Status inicial: Pendente.",
-        ].filter(Boolean).join("\n"),
+        p_notes: notes || null,
       }),
     });
     if (!response.ok) {
       const detail = await response.text().catch(() => "");
       if (/HORARIO_INDISPONIVEL/i.test(detail)) throw new Error("Esse horário acabou de ser reservado. Escolha outro ou deixe a combinar.");
-      return false;
+      throw new Error("Não foi possível registrar o horário. Tente novamente ou deixe data e horário a combinar.");
     }
     return true;
   }
@@ -168,9 +163,9 @@
         <div class="request-total"><span>Valor total estimado</span><strong id="requestTotal">${money(total(items))}</strong></div>
         <form id="appointmentRequestForm">
           <div class="request-grid">
-            <label class="request-field">Nome completo<input id="requestName" required maxlength="120" autocomplete="name"></label>
+            <label class="request-field">Nome completo<input id="requestName" required maxlength="80" autocomplete="name"></label>
             <label class="request-field">WhatsApp<input id="requestPhone" required maxlength="20" inputmode="tel" autocomplete="tel" placeholder="(11) 99999-9999"></label>
-            <label class="request-field">Data desejada<select id="requestDate"><option value="">Carregando…</option></select></label>
+            <label class="request-field full">Profissional desejada<select id="requestProfessional" required><option value="">Selecione a profissional</option><option value="raquel">Raquel</option><option value="iarytsa">Iarytsa</option></select></label><label class="request-field">Data desejada<select id="requestDate"><option value="">Carregando…</option></select></label>
             <label class="request-field">Horário desejado<select id="requestTime"><option value="">A combinar</option></select></label>
             <label class="request-field full">Observação<textarea id="requestNotes" maxlength="500" placeholder="Detalhes do serviço ou preferência de horário."></textarea></label>
           </div>
@@ -184,6 +179,7 @@
 
     const itemsBox = modal.querySelector("#requestItems");
     const totalBox = modal.querySelector("#requestTotal");
+    const professionalSelect = modal.querySelector("#requestProfessional");
     const dateSelect = modal.querySelector("#requestDate");
     const timeSelect = modal.querySelector("#requestTime");
     const submit = modal.querySelector("#requestSubmit");
@@ -215,11 +211,12 @@
     const close = () => modal.remove();
     modal.querySelector("#requestCancel").addEventListener("click", close);
     modal.addEventListener("click", (event) => { if (event.target === modal) close(); });
-    dateSelect.addEventListener("change", () => populateAvailability(availabilityRows, dateSelect, timeSelect));
+    professionalSelect.addEventListener("change",()=>{dateSelect.value="";timeSelect.value="";populateAvailability(availabilityRows.filter(row=>row.professional===professionalSelect.value),dateSelect,timeSelect);infoBox.textContent=professionalSelect.value?(availabilityRows.some(row=>row.professional===professionalSelect.value)?"Selecione a data e o horário da profissional escolhida.":"Sem horários para essa profissional. Você pode consultar pelo WhatsApp."):"Selecione a profissional para ver os horários.";});
+    dateSelect.addEventListener("change", () => populateAvailability(availabilityRows.filter(row=>row.professional===professionalSelect.value), dateSelect, timeSelect));
 
     loadAvailability().then((rows) => {
       availabilityRows = rows || [];
-      populateAvailability(availabilityRows, dateSelect, timeSelect);
+      populateAvailability(availabilityRows.filter(row=>row.professional===professionalSelect.value), dateSelect, timeSelect);
       infoBox.textContent = availabilityRows.length ? "Horários carregados. Você também pode deixar a combinar." : "Sem horários publicados no momento; o orçamento pode ser enviado normalmente.";
     }).catch((error) => {
       console.warn(error);
@@ -234,8 +231,10 @@
       const phone = modal.querySelector("#requestPhone").value.replace(/\D/g, "");
       const date = dateSelect.value;
       const time = timeSelect.value;
+      const professional = professionalSelect.value;
       const notes = modal.querySelector("#requestNotes").value.trim();
 
+      if (!professional) {errorBox.textContent="Selecione a profissional desejada.";return;}
       if (!name || phone.length < 10) {
         errorBox.textContent = "Preencha seu nome e um WhatsApp válido.";
         return;
@@ -251,7 +250,7 @@
 
       let registered = false;
       try {
-        registered = await tryRegister({ name, phone, items, date, time, notes });
+        registered = await tryRegister({ name, phone, items, date, time, professional, notes });
       } catch (error) {
         errorBox.textContent = error.message;
         submit.disabled = false;
@@ -259,7 +258,7 @@
         return;
       }
 
-      const message = buildWhatsAppMessage({ name, phone, items, date, time, notes, registered });
+      const message = buildWhatsAppMessage({ name, phone, items, date, time, professional, notes, registered });
       openWhatsApp(message);
       close();
     });
