@@ -26,15 +26,29 @@
   }
 
   function localDateValue() {
-    const now = new Date();
-    const pad = (n) => String(n).padStart(2, "0");
-    return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+    const parts = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Sao_Paulo", year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(new Date());
+    const get = type => parts.find(part => part.type === type).value;
+    return `${get("year")}-${get("month")}-${get("day")}`;
+  }
+
+  function matchingSlots(rows, preference) {
+    return (rows || []).filter(row => ["raquel", "iarytsa"].includes(row.professional) && (preference === "any" || row.professional === preference));
+  }
+
+  function resolveProfessional(rows, preference, date, time) {
+    if (preference !== "any") return preference;
+    if (!date && !time) return "any";
+    return matchingSlots(rows, preference).find(row => row.available_date === date && timeValue(row.available_time) === time)?.professional || "";
+  }
+
+  function professionalLabel(value) {
+    return value === "any" ? "Sem preferência — a combinar com o espaço" : window.StudioProfessionals.label(value);
   }
 
   function dateLabel(value) {
     if (!value) return "";
     const [y, m, d] = value.split("-").map(Number);
-    return new Date(y, m - 1, d).toLocaleDateString("pt-BR", { weekday: "short", day: "2-digit", month: "2-digit" });
+    return new Date(y, m - 1, d).toLocaleDateString("pt-BR", { weekday: "short", day: "2-digit", month: "2-digit", year: "numeric" });
   }
 
   async function loadAvailability() {
@@ -53,17 +67,16 @@
   }
 
   function populateAvailability(rows, dateSelect, timeSelect) {
-    const dates = [...new Set((rows || []).map((row) => row.available_date).filter(Boolean))];
+    const dates = [...new Set((rows || []).map((row) => row.available_date).filter(Boolean))].sort();
     const current = dateSelect.value;
     dateSelect.innerHTML = `<option value="">A combinar</option>` + dates.map((date) => `<option value="${esc(date)}">${esc(dateLabel(date))}</option>`).join("");
     if (dates.includes(current)) dateSelect.value = current;
 
-    const times = (rows || []).filter((row) => row.available_date === dateSelect.value);
-    timeSelect.innerHTML = `<option value="">A combinar</option>` + times.map((row) => {
-      const t = timeValue(row.available_time);
+    const times = [...new Set((rows || []).filter((row) => row.available_date === dateSelect.value).map(row => timeValue(row.available_time)))].sort();
+    timeSelect.innerHTML = `<option value="">A combinar</option>` + times.map((t) => {
       return `<option value="${esc(t)}">${esc(t)}</option>`;
     }).join("");
-    timeSelect.disabled = false;
+    timeSelect.disabled = !dateSelect.value;
   }
 
   function servicesText(items) {
@@ -81,13 +94,13 @@
       `Cliente: ${name}`,
       `WhatsApp: ${phone}`,
       `Serviços: ${servicesText(items)}`,
-      `Profissional: ${window.StudioProfessionals.label(professional)}`,
+      `Profissional: ${professionalLabel(professional)}`,
       `Valor estimado: ${money(total(items))}`,
       date ? `Data desejada: ${dateLabel(date)}` : "Data desejada: a combinar",
       time ? `Horário desejado: ${time}` : "Horário desejado: a combinar",
       notes ? `Observação: ${notes}` : "",
       "",
-      registered ? "Solicitação registrada no Painel ADM." : "Solicitação enviada pelo site; confirmação pelo WhatsApp.",
+      registered ? "Solicitação registrada no Painel ADM. Aguardando confirmação do Espaço I.R; o atendimento ainda não está confirmado." : "Consulta pelo WhatsApp — sem reserva de horário. Aguarde a confirmação do Espaço I.R.",
     ];
     return lines.filter(Boolean).join("\n");
   }
@@ -140,13 +153,14 @@
       style.id = "appointment-request-style";
       style.textContent = `
         .request-modal{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;padding:18px;background:rgba(49,20,32,.58);backdrop-filter:blur(7px)}
-        .request-card{width:min(620px,100%);max-height:92vh;overflow:auto;background:#fff;border-radius:26px;padding:28px;box-shadow:0 28px 80px rgba(49,20,32,.32);color:#311420}
+        .request-card{box-sizing:border-box;width:min(620px,100%);max-height:92vh;overflow:auto;background:#fff;border-radius:26px;padding:28px;box-shadow:0 28px 80px rgba(49,20,32,.32);color:#311420}
         .request-card h3{margin:0 0 7px;font-family:'Playfair Display',serif;font-size:29px;color:#4b1630}.request-card>p{margin:0 0 18px;color:#785c68;font-size:13px;line-height:1.55}
         .request-items{display:grid;gap:8px;margin-bottom:14px}.request-item{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;padding:12px 14px;border:1px solid rgba(75,22,48,.1);border-radius:15px;background:#fcf9ff}.request-item strong{display:block;font-size:13px}.request-item small{display:block;margin-top:3px;color:#785c68;font-size:11px}.request-item__controls{display:flex;align-items:center;gap:7px}.request-item__controls button{width:30px;height:30px;border:1px solid rgba(75,22,48,.14);border-radius:9px;background:#fff;color:#4b1630;font-weight:800}.request-item__qty{min-width:20px;text-align:center;font-weight:800}
         .request-total{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;margin-bottom:16px;border-radius:15px;background:linear-gradient(135deg,#f5efff,#fff5f8)}.request-total span{font-size:12px;color:#785c68}.request-total strong{font:600 21px 'Playfair Display',serif;color:#4b1630}
         .request-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px 12px}.request-field{display:block;margin:9px 0;font-size:12px;font-weight:700}.request-field.full{grid-column:1/-1}.request-field input,.request-field select,.request-field textarea{width:100%;margin-top:6px;padding:12px;border:1px solid rgba(75,22,48,.16);border-radius:12px;background:#fff;color:#311420;font:inherit;box-sizing:border-box}.request-field textarea{min-height:82px;resize:vertical}
         .availability-help{margin:5px 0 0!important;color:#8a6b77!important;font-size:11px!important}.request-error{min-height:18px;margin:9px 0 0!important;color:#b3264d!important;font-size:12px!important}.request-info{min-height:18px;margin:5px 0 0!important;color:#6b5872!important;font-size:11px!important}
         .request-actions{display:flex;gap:10px;margin-top:18px}.request-actions button{flex:1;padding:13px;border:0;border-radius:12px;font-weight:700}.request-cancel{background:#f5f0f8;color:#4b1630}.request-submit{background:linear-gradient(135deg,#8b63c7,#4b1630);color:#fff}.request-submit:disabled{opacity:.65}
+        .request-card [hidden]{display:none!important}.request-steps{margin-bottom:14px;color:#785c68;font-size:12px}.request-review{padding:16px;border:1px solid rgba(75,22,48,.16);border-radius:16px;background:#fcf9ff}.request-review h4{margin:0 0 12px;font-size:17px}.request-review dl{margin:0;display:grid;gap:6px}.request-review dt{font-weight:700;font-size:12px;color:#785c68}.request-review dd{margin:0 0 9px;font-size:14px;overflow-wrap:anywhere}.request-review p{font-size:12px;line-height:1.5;color:#785c68}.request-card :focus-visible{outline:3px solid #8b63c7;outline-offset:3px}
         @media(max-width:560px){.request-grid{grid-template-columns:1fr}.request-field.full{grid-column:auto}.request-card{padding:21px}.request-item{grid-template-columns:1fr}.request-actions{flex-direction:column-reverse}}
       `;
       document.head.append(style);
@@ -158,21 +172,23 @@
     modal.innerHTML = `
       <div class="request-card" role="dialog" aria-modal="true" aria-labelledby="requestTitle">
         <h3 id="requestTitle">Enviar orçamento</h3>
-        <p>Confira os serviços e envie seu orçamento. Data e horário são opcionais: se não houver disponibilidade carregada, você ainda pode enviar pelo WhatsApp.</p>
+        <p>Escolha a profissional e veja os horários disponíveis. Você vai revisar os detalhes antes de enviar. O atendimento depende da confirmação do Espaço I.R.</p>
+        <div class="request-steps" id="requestStep" aria-live="polite">1. Serviços → 2. Profissional e horário → 3. Revisão</div>
         <div id="requestItems" class="request-items"></div>
         <div class="request-total"><span>Valor total estimado</span><strong id="requestTotal">${money(total(items))}</strong></div>
         <form id="appointmentRequestForm">
           <div class="request-grid">
             <label class="request-field">Nome completo<input id="requestName" required maxlength="80" autocomplete="name"></label>
             <label class="request-field">WhatsApp<input id="requestPhone" required maxlength="20" inputmode="tel" autocomplete="tel" placeholder="(11) 99999-9999"></label>
-            <label class="request-field full">Profissional desejada<select id="requestProfessional" required><option value="">Selecione a profissional</option><option value="raquel">Raquel</option><option value="iarytsa">Iarytsa</option></select></label><label class="request-field">Data desejada<select id="requestDate"><option value="">Carregando…</option></select></label>
+            <label class="request-field full">Profissional desejada<select id="requestProfessional" required><option value="">Selecione a profissional</option><option value="raquel">Raquel</option><option value="iarytsa">Iarytsa</option><option value="any">Sem preferência</option></select></label><label class="request-field">Data desejada<select id="requestDate"><option value="">Selecione a profissional primeiro</option></select></label>
             <label class="request-field">Horário desejado<select id="requestTime"><option value="">A combinar</option></select></label>
             <label class="request-field full">Observação<textarea id="requestNotes" maxlength="500" placeholder="Detalhes do serviço ou preferência de horário."></textarea></label>
           </div>
+          <section id="requestReview" class="request-review" tabindex="-1" aria-label="Resumo da solicitação" hidden></section>
           <p class="availability-help">Se preferir, deixe data e horário como “A combinar”.</p>
           <p id="requestInfo" class="request-info">Carregando horários disponíveis…</p>
-          <p id="requestError" class="request-error"></p>
-          <div class="request-actions"><button type="button" class="request-cancel" id="requestCancel">Cancelar</button><button type="submit" class="request-submit" id="requestSubmit">Enviar orçamento pelo WhatsApp</button></div>
+          <p id="requestError" class="request-error" role="alert"></p>
+          <div class="request-actions"><button type="button" class="request-cancel" id="requestCancel">Cancelar</button><button type="submit" class="request-submit" id="requestSubmit">Revisar solicitação</button></div>
         </form>
       </div>`;
     document.body.append(modal);
@@ -185,7 +201,29 @@
     const submit = modal.querySelector("#requestSubmit");
     const errorBox = modal.querySelector("#requestError");
     const infoBox = modal.querySelector("#requestInfo");
+    const reviewBox = modal.querySelector("#requestReview");
+    const fields = modal.querySelector(".request-grid");
+    const cancel = modal.querySelector("#requestCancel");
+    const previousFocus = document.activeElement;
+    let reviewedRequest = null;
     let availabilityRows = [];
+
+    function editing() {
+      reviewedRequest = null;
+      fields.hidden = false;
+      itemsBox.hidden = false;
+      reviewBox.hidden = true;
+      cancel.textContent = "Cancelar";
+      submit.textContent = "Revisar solicitação";
+      modal.querySelector("#requestStep").textContent = "1. Serviços → 2. Profissional e horário → 3. Revisão";
+    }
+
+    function refreshAvailability() {
+      const rows = matchingSlots(availabilityRows, professionalSelect.value);
+      populateAvailability(rows, dateSelect, timeSelect);
+      dateSelect.disabled = !professionalSelect.value;
+      infoBox.textContent = !professionalSelect.value ? "Selecione a profissional para ver os horários." : !rows.length ? "Sem horários publicados para essa escolha. Você pode consultar pelo WhatsApp sem reservar um horário." : professionalSelect.value === "any" ? "A profissional disponível será indicada na revisão. O horário só será solicitado após você conferir." : "Selecione a data e o horário, ou deixe ambos a combinar.";
+    }
 
     function refreshItems() {
       itemsBox.replaceChildren();
@@ -208,39 +246,67 @@
       refreshItems();
     });
 
-    const close = () => modal.remove();
-    modal.querySelector("#requestCancel").addEventListener("click", close);
+    const close = () => { if (submit.disabled) return; modal.remove(); previousFocus?.focus(); };
+    cancel.addEventListener("click", () => { if (submit.disabled) return; if (reviewedRequest) { editing(); professionalSelect.focus(); } else close(); });
     modal.addEventListener("click", (event) => { if (event.target === modal) close(); });
-    professionalSelect.addEventListener("change",()=>{dateSelect.value="";timeSelect.value="";populateAvailability(availabilityRows.filter(row=>row.professional===professionalSelect.value),dateSelect,timeSelect);infoBox.textContent=professionalSelect.value?(availabilityRows.some(row=>row.professional===professionalSelect.value)?"Selecione a data e o horário da profissional escolhida.":"Sem horários para essa profissional. Você pode consultar pelo WhatsApp."):"Selecione a profissional para ver os horários.";});
-    dateSelect.addEventListener("change", () => populateAvailability(availabilityRows.filter(row=>row.professional===professionalSelect.value), dateSelect, timeSelect));
+    modal.addEventListener("keydown", event => {
+      if (event.key === "Escape") { event.preventDefault(); close(); }
+      if (event.key !== "Tab") return;
+      const focusable = [...modal.querySelectorAll('button,input,select,textarea')].filter(el => !el.disabled && el.getClientRects().length);
+      const first = focusable[0], last = focusable.at(-1);
+      if (event.shiftKey && (document.activeElement === first || document.activeElement === reviewBox)) { event.preventDefault(); last?.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
+    });
+    professionalSelect.addEventListener("change",()=>{dateSelect.value="";timeSelect.value="";refreshAvailability();});
+    dateSelect.addEventListener("change", refreshAvailability);
+    refreshAvailability();
 
     loadAvailability().then((rows) => {
       availabilityRows = rows || [];
-      populateAvailability(availabilityRows.filter(row=>row.professional===professionalSelect.value), dateSelect, timeSelect);
-      infoBox.textContent = availabilityRows.length ? "Horários carregados. Você também pode deixar a combinar." : "Sem horários publicados no momento; o orçamento pode ser enviado normalmente.";
+      refreshAvailability();
     }).catch((error) => {
       console.warn(error);
       availabilityRows = [];
-      populateAvailability([], dateSelect, timeSelect);
+      refreshAvailability();
       infoBox.textContent = "Não foi possível carregar a agenda agora; o orçamento continua disponível pelo WhatsApp.";
     });
 
     modal.querySelector("#appointmentRequestForm").addEventListener("submit", async (event) => {
       event.preventDefault();
+      if (submit.disabled) return;
       const name = modal.querySelector("#requestName").value.trim();
       const phone = modal.querySelector("#requestPhone").value.replace(/\D/g, "");
       const date = dateSelect.value;
       const time = timeSelect.value;
-      const professional = professionalSelect.value;
+      const preference = professionalSelect.value;
+      const professional = resolveProfessional(availabilityRows, preference, date, time);
       const notes = modal.querySelector("#requestNotes").value.trim();
 
-      if (!professional) {errorBox.textContent="Selecione a profissional desejada.";return;}
-      if (!name || phone.length < 10) {
+      if (!preference) {errorBox.textContent="Selecione a profissional desejada.";return;}
+      if (name.length < 2 || !/^(?:\d{10,11}|55\d{10,11})$/.test(phone)) {
         errorBox.textContent = "Preencha seu nome e um WhatsApp válido.";
         return;
       }
       if ((date && !time) || (!date && time)) {
         errorBox.textContent = "Escolha data e horário juntos ou deixe ambos como “A combinar”.";
+        return;
+      }
+
+      if (!professional) { errorBox.textContent = "Escolha um horário disponível para essa profissional."; return; }
+
+      if (!reviewedRequest) {
+        reviewedRequest = { name, phone, items: items.map(item => ({...item})), date, time, professional, notes };
+        errorBox.textContent = "";
+        const summary = [["Cliente", name], ["WhatsApp", phone], ["Serviços", servicesText(items)], ["Profissional", professionalLabel(professional)], ["Data e horário", date ? `${dateLabel(date)} às ${time}` : "A combinar — sem reserva de horário"], ["Valor estimado", money(total(items))]];
+        if (notes) summary.push(["Observação", notes]);
+        reviewBox.innerHTML = `<h4>Confira sua solicitação</h4><dl>${summary.map(([label, value]) => `<dt>${esc(label)}</dt><dd>${esc(value)}</dd>`).join("")}</dl><p>${preference === "any" && date ? "Você escolheu sem preferência. A profissional indicada está disponível nesse horário. " : ""}O envio não confirma o atendimento: aguarde a aprovação do Espaço I.R.</p>`;
+        fields.hidden = true;
+        itemsBox.hidden = true;
+        reviewBox.hidden = false;
+        cancel.textContent = "Voltar e editar";
+        submit.textContent = "Enviar solicitação pelo WhatsApp";
+        modal.querySelector("#requestStep").textContent = "3. Revisão — confira antes de enviar";
+        reviewBox.focus();
         return;
       }
 
@@ -250,15 +316,17 @@
 
       let registered = false;
       try {
-        registered = await tryRegister({ name, phone, items, date, time, professional, notes });
+        registered = await tryRegister(reviewedRequest);
       } catch (error) {
         errorBox.textContent = error.message;
         submit.disabled = false;
-        submit.textContent = "Enviar orçamento pelo WhatsApp";
+        editing();
+        if (date) loadAvailability().then(rows => { availabilityRows = rows || []; refreshAvailability(); }).catch(() => {});
         return;
       }
 
-      const message = buildWhatsAppMessage({ name, phone, items, date, time, professional, notes, registered });
+      const message = buildWhatsAppMessage({ ...reviewedRequest, registered });
+      submit.disabled = false;
       openWhatsApp(message);
       close();
     });
