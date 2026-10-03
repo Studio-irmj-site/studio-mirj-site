@@ -1,0 +1,12 @@
+const {test}=require('node:test');
+const assert=require('node:assert/strict');
+const {generate,pending}=require('../admin/availability-generator.js');
+const base={date:'2026-10-15',start:'08:00',end:'18:00',interval:30,pause:false,repeat:false};
+test('Generates starts before closing time',()=>{const rows=generate(base);assert.equal(rows.length,20);assert.equal(rows[0].available_time,'08:00:00');assert.equal(rows.at(-1).available_time,'17:30:00');});
+test('Pause excludes its start but resumes at its end',()=>{const rows=generate({...base,pause:true,pauseStart:'12:00',pauseEnd:'13:00'});assert.equal(rows.length,18);assert(!rows.some(r=>r.available_time==='12:00:00'||r.available_time==='12:30:00'));assert(rows.some(r=>r.available_time==='13:00:00'));});
+test('Custom intervals preserve a consistent grid',()=>assert.deepEqual(generate({...base,start:'08:00',end:'09:00',interval:17}).map(r=>r.available_time),['08:00:00','08:17:00','08:34:00','08:51:00']));
+test('Repeats only selected weekdays across months',()=>{const rows=generate({...base,repeat:true,until:'2026-11-05',weekdays:[4],start:'08:00',end:'09:00'});assert.deepEqual([...new Set(rows.map(r=>r.available_date))],['2026-10-15','2026-10-22','2026-10-29','2026-11-05']);});
+test('Invalid dates, ranges, pauses and intervals are rejected',()=>{for(const override of [{date:'2026-02-30'},{end:'07:00'},{interval:0},{interval:1.5},{start:'25:00'},{pause:true,pauseStart:'13:00',pauseEnd:'12:00'},{repeat:true,until:'2026-10-14',weekdays:[4]},{repeat:true,until:'2026-10-20',weekdays:[]}])assert.throws(()=>generate({...base,...override}));});
+test('Empty weekday period and fully paused day are rejected',()=>{assert.throws(()=>generate({...base,repeat:true,until:base.date,weekdays:[1]}));assert.throws(()=>generate({...base,pause:true,pauseStart:base.start,pauseEnd:base.end}));});
+test('Batch size is bounded',()=>assert.throws(()=>generate({...base,repeat:true,until:'2026-12-31',weekdays:[0,1,2,3,4,5,6],interval:1}),/2.000/));
+test('Existing blocked, active and booked starts are not recreated or mutated',()=>{const rows=generate({...base,end:'10:00'}),existing=[{...rows[0],active:false},{...rows[1],active:true},{available_date:base.date,available_time:'09:00'}],before=structuredClone(existing);assert.deepEqual(pending(rows,existing),[rows[3]]);assert.deepEqual(existing,before);assert.deepEqual(pending([...rows,rows[3]],existing),[rows[3]]);});

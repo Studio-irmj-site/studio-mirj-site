@@ -208,3 +208,30 @@ button:disabled { cursor: wait; opacity: .65; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; }
 }
+
+/* Availability generator */
+.av-generator-launch { display:flex; align-items:center; gap:16px; margin:20px 0; }
+.av-generator-launch .primary { width:auto; }
+.av-generator-launch p,.av-hint { font-size:12px; color:var(--muted); line-height:1.5; }
+.av-generator { width:min(650px,calc(100% - 24px)); max-height:90dvh; padding:26px; border:1px solid var(--line); border-radius:22px; color:#321321; box-shadow:0 30px 100px #42102738; }
+.av-generator::backdrop { background:#22111a70; }
+.av-dialog-head { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
+.av-dialog-head h3 { margin:0; font-size:24px; }
+.av-dialog-head p { font-size:13px; color:var(--muted); }
+.av-fields { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; }
+.av-fields[hidden],.av-generator [hidden] { display:none; }
+.av-option-card,.av-preview { padding:14px; background:var(--bg); border:1px solid var(--line); border-radius:14px; margin:16px 0; }
+.av-choice { display:inline-flex; align-items:center; gap:8px; margin:8px 12px 8px 0; font-size:12px; }
+.av-choice input { width:16px; height:16px; margin:0; accent-color:var(--rose); }
+.av-generator fieldset { border:1px solid var(--line); border-radius:14px; padding:14px; }
+.av-generator legend { font-size:13px; font-weight:700; }
+.av-weekdays { display:flex; gap:4px; flex-wrap:wrap; }
+.av-preview strong { font-size:13px; }
+.av-preview p { font-size:12px; }
+.av-chips { display:flex; gap:6px; flex-wrap:wrap; max-height:150px; overflow:auto; }
+.av-chips span { padding:5px 12px; background:#fff; border:1px solid var(--line); border-radius:20px; font-size:12px; }
+.av-dialog-actions { display:flex; justify-content:flex-end; gap:10px; }
+.av-dialog-actions .primary { width:auto; padding:12px 20px; }
+.av-dialog-actions .action { padding:12px 20px; }
+.av-success { color:#267149; font-size:13px; }
+@media(max-width:600px){.av-fields { grid-template-columns:1fr; gap:0; }.av-generator { padding:18px; }.av-generator-launch { align-items:flex-start; flex-direction:column; gap:4px; }.av-dialog-actions button { flex:1; }.toolbar { flex-wrap:wrap; }}
