@@ -107,29 +107,13 @@
 
   async function tryRegister({ name, phone, items, date, time, professional, notes }) {
     if (!config.url || !config.anonKey || !date || !time) return false;
-    const response = await fetch(`${config.url}/rest/v1/rpc/create_professional_appointment_request`, {
-      method: "POST",
-      headers: {
-        apikey: config.anonKey,
-        Authorization: `Bearer ${config.anonKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        p_client_name: name,
-        p_client_phone: phone,
-        p_items: items.map(item => ({service_id:item.id,quantity:item.quantity})),
-        p_professional: professional,
-        p_available_date: date,
-        p_available_time: `${time}:00`,
-        p_notes: notes || null,
-      }),
-    });
-    if (!response.ok) {
-      const detail = await response.text().catch(() => "");
-      if (/HORARIO_INDISPONIVEL/i.test(detail)) throw new Error("Esse horário acabou de ser reservado. Escolha outro ou deixe a combinar.");
-      throw new Error("Não foi possível registrar o horário. Tente novamente ou deixe data e horário a combinar.");
-    }
-    return true;
+    if (!await window.StudioCustomerAccount?.requireLogin()) throw new Error('Entre na sua conta e confirme a solicitação novamente.');
+    let id;
+    try { id = await window.StudioCustomerAppointments.register({
+      p_client_name:name,p_client_phone:phone,p_items:items.map(item=>({service_id:item.id,quantity:item.quantity})),
+      p_professional:professional,p_available_date:date,p_available_time:time+':00',p_notes:notes||null
+    }); } catch(error){if(/horário não está mais disponível/.test(error.message))throw new Error('Esse horário acabou de ser reservado. Escolha outro ou deixe a combinar.');throw error;}
+    return {id};
   }
 
   function openWhatsApp(message) {
@@ -214,7 +198,8 @@
     const rememberInput = modal.querySelector("#requestRemember");
     const contactStatus = modal.querySelector("#requestContactStatus");
     const savedContactBox = modal.querySelector("#requestSavedContact");
-    let savedContact = contactStore?.read() || null;
+    const accountContact = window.StudioCustomerAccount?.getCachedProfile();
+    let savedContact = accountContact || contactStore?.read() || null;
     function showSavedContact(contact) {
       nameInput.value = contact.name;
       phoneInput.value = contact.phone;
@@ -232,6 +217,12 @@
       nameInput.focus();
     }
     if (savedContact) showSavedContact(savedContact);
+    if(accountContact){
+      rememberInput.checked=false;
+      modal.querySelector('.request-remember').hidden=true;
+      modal.querySelector('#requestForgetContact').hidden=true;
+      contactStatus.textContent='Nome e WhatsApp preenchidos da sua conta.';
+    }
     modal.querySelector("#requestEditContact").addEventListener("click", editContact);
     function clearSavedContact(clearFields) {
       if (!contactStore?.clear()) {
@@ -385,16 +376,23 @@
       submit.disabled = false;
       openWhatsApp(message);
       close();
+      if(registered) window.StudioCustomerAppointments.showReceipt(registered.id, message);
     });
 
     if (savedContact) professionalSelect.focus();
     else nameInput.focus();
   }
 
-  cta.addEventListener("click", (event) => {
+  let pendingQuote=false;
+  window.addEventListener("customer-account-ready",()=>{if(pendingQuote){pendingQuote=false;openRequestModal();}});
+  cta.addEventListener("click", async (event) => {
     const items = selectedItems();
     if (!items.length) return;
     event.preventDefault();
+    pendingQuote=true;
+    if(!await window.StudioCustomerAccount?.requireLogin())return;
+    pendingQuote=false;
     openRequestModal();
   });
 })();
+

@@ -28,9 +28,11 @@ async function setup(rows=slots,conflict=false,memory=new Map()){
  doc.querySelectorAll=()=>[card];
  const fields=doc.elements['.request-grid']=new Element(doc);
  const calls=[],opened=[];
- const win={SUPABASE_CONFIG:{url:'https://test.invalid',anonKey:'test'},StudioProfessionals:require('../professionals.js'),open(url){opened.push(decodeURIComponent(url));return {};}};
+ const win={addEventListener(){},SUPABASE_CONFIG:{url:'https://test.invalid',anonKey:'test'},StudioProfessionals:require('../professionals.js'),open(url){opened.push(decodeURIComponent(url));return {};}};
  win.StudioCustomerContact=require('../customer-contact.js').create(()=>({getItem:key=>memory.get(key)||null,setItem:(key,value)=>memory.set(key,value),removeItem:key=>memory.delete(key)}));
- const context={window:win,document:doc,Intl,Date,console,fetch:async(url,options)=>url.endsWith('get_professional_available_slots')?{ok:true,json:async()=>rows}:{ok:!conflict,text:async()=> 'HORARIO_INDISPONIVEL',...calls.push(JSON.parse(options.body))}};
+ win.StudioCustomerAccount={requireLogin:async()=>true,getCachedProfile:()=>null};
+ win.StudioCustomerAppointments={register:async args=>{calls.push(args);if(conflict)throw new Error('Esse horário acabou de ser reservado. Escolha outro.');return 'appointment-test';},showReceipt(){}};
+ const context={window:win,document:doc,Intl,Date,console,fetch:async(url,options)=>url.endsWith('get_professional_available_slots')?{ok:true,json:async()=>rows}:{ok:!conflict,json:async()=> 'appointment-test',text:async()=> 'HORARIO_INDISPONIVEL',...calls.push(JSON.parse(options.body))}};
  vm.runInNewContext(script,context);await cta.fire('click');await new Promise(resolve=>setImmediate(resolve));
  const el=id=>doc.elements[id];if(!el('requestName').value){el('requestName').value='Cliente teste';el('requestPhone').value='11999999999';}
  const choose=async(id,value)=>{el(id).value=value;await el(id).fire('change');};
