@@ -230,7 +230,15 @@ function applyStudioSettings(settings) {
     document.querySelector("#city").textContent = settings.city;
     document.querySelector("#addressTitle").textContent = settings.city;
   }
-  if (settings.address) document.querySelector("#address").textContent = settings.address;
+  if (settings.address) {
+    const address = String(settings.address).trim();
+    const query = [address, settings.city || "Jundiaí, SP"].join(" ");
+    const mapUrl = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(query);
+    document.querySelectorAll("[data-map-address]").forEach((link) => {
+      link.textContent = (link.dataset.mapPrefix || "") + address;
+      link.href = mapUrl;
+    });
+  }
   if (settings.hours) {
     const [days, ...timeParts] = String(settings.hours).split("·").map((part) => part.trim());
     if (timeParts.length) {
