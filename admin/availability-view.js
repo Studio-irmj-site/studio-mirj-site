@@ -1,6 +1,8 @@
 (function(root){'use strict';
 function filter(rows,options){return rows.filter(row=>{
  if(options.date){if(row.available_date!==options.date)return false;}
+ else if(options.period==='today'&&row.available_date!==options.today)return false;
+ else if(options.period==='week'){const end=new Date(options.today+'T12:00:00Z');end.setUTCDate(end.getUTCDate()+6);if(row.available_date<options.today||row.available_date>end.toISOString().slice(0,10))return false;}
  else if(options.period==='upcoming'&&row.available_date<options.today)return false;
  else if(options.period==='past'&&row.available_date>=options.today)return false;
  if(options.professional==='shared'&&row.professional)return false;
