@@ -6,7 +6,7 @@ const close=(focus=false)=>{panel.classList.remove('av-menu-open');menu.setAttri
 const open=()=>{panel.classList.add('av-menu-open');menu.setAttribute('aria-expanded','true');aside.inert=false;document.body.style.overflow='hidden';aside.querySelector('button')?.focus();};
 menu.addEventListener('click',()=>panel.classList.contains('av-menu-open')?close(true):open());
 backdrop.addEventListener('click',()=>close(true));
-aside.addEventListener('click',event=>{if(event.target.closest('button'))close(true)});
+document.addEventListener('click',event=>{const button=event.target.closest?.('button');if(button&&aside.contains(button)&&panel.classList.contains('av-menu-open'))queueMicrotask(()=>close(true));},true);
 document.addEventListener('keydown',event=>{if(!panel.classList.contains('av-menu-open'))return;if(event.key==='Escape'){event.preventDefault();close(true);}if(event.key==='Tab'){const buttons=[...aside.querySelectorAll('button:not([disabled]),a[href]')].filter(el=>el.getClientRects().length);if(!buttons.length)return;const first=buttons[0],last=buttons.at(-1);if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus();}else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}}});
 window.matchMedia('(max-width:700px)').addEventListener('change',()=>close());
 new MutationObserver(()=>{if(panel.classList.contains('hidden')&&panel.classList.contains('av-menu-open'))close();}).observe(panel,{attributes:true,attributeFilter:['class']});
