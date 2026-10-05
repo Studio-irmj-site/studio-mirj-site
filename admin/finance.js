@@ -21,6 +21,8 @@
   ];
   const paymentMethods = ['Pix', 'Dinheiro', 'Cartão', 'Boleto', 'Transferência', 'Outro'];
   let financeBusy = false;
+  let expensePage = 0;
+  const expensePageSize = 6;
   let lastFocusedElement = null;
   let cachedIncomeData = [];
   let cachedExpenseData = [];
@@ -440,6 +442,7 @@
 
   const wireFinanceFilters = (incomeData, expenseData) => {
     document.getElementById('financePeriod')?.addEventListener('change', event => {
+      expensePage = 0;
       financeFilters.period = event.target.value;
       if (financeFilters.period === 'custom' && (!financeFilters.start || !financeFilters.end)) {
         const now = new Date();
@@ -450,6 +453,7 @@
     });
 
     document.getElementById('financeCategory')?.addEventListener('change', event => {
+      expensePage = 0;
       financeFilters.category = event.target.value;
       renderFinance(true);
     });
@@ -461,12 +465,14 @@
         showToast('Selecione um intervalo de datas válido.', 'error');
         return;
       }
+      expensePage = 0;
       financeFilters.start = start;
       financeFilters.end = end;
       renderFinance(true);
     });
 
     document.getElementById('clearFinanceFilters')?.addEventListener('click', () => {
+      expensePage = 0;
       financeFilters.period = 'month';
       financeFilters.start = '';
       financeFilters.end = '';
@@ -484,6 +490,7 @@
     const content = document.getElementById('content');
     if (!content) return;
 
+    const openSections = new Set([...content.querySelectorAll('details[data-finance-section][open]')].map(item => item.dataset.financeSection));
     financeBusy = true;
     if (!useCache || !financeCacheReady) {
       content.innerHTML = '<div class="card finance-loading"><h3>Financeiro</h3><p>Carregando informações...</p></div>';
@@ -575,14 +582,17 @@
         .map(category => `<option value="${esc(category)}" ${financeFilters.category === category ? 'selected' : ''}>${esc(category)}</option>`)
         .join('');
 
-      const expenseRows = filtered.expenses.length
-        ? filtered.expenses.map(item => `
+      const expensePages = Math.max(1, Math.ceil(filtered.expenses.length / expensePageSize));
+      expensePage = Math.min(expensePage, expensePages - 1);
+      const pageExpenses = filtered.expenses.slice(expensePage * expensePageSize, (expensePage + 1) * expensePageSize);
+      const expenseRows = pageExpenses.length
+        ? pageExpenses.map(item => `
           <tr>
-            <td>${formatDate(item.expense_date)}</td>
-            <td><strong>${esc(item.description)}</strong>${item.notes ? `<small class="expense-note">${esc(item.notes)}</small>` : ''}</td>
-            <td><span class="category-pill">${esc(item.category || 'Geral')}</span></td>
-            <td>${esc(item.payment_method || '-')}</td>
-            <td class="expense-value">${money(item.amount)}</td>
+            <td data-label="Data">${formatDate(item.expense_date)}</td>
+            <td data-label="Descrição"><strong>${esc(item.description)}</strong>${item.notes ? `<small class="expense-note">${esc(item.notes)}</small>` : ''}</td>
+            <td data-label="Categoria"><span class="category-pill">${esc(item.category || 'Geral')}</span></td>
+            <td data-label="Pagamento">${esc(item.payment_method || '-')}</td>
+            <td data-label="Valor" class="expense-value">${money(item.amount)}</td>
             <td class="expense-actions">
               <button class="action" type="button" data-expense-edit="${esc(item.id)}" aria-label="Editar despesa ${esc(item.description)}">Editar</button>
               <button class="action danger" type="button" data-expense-delete="${esc(item.id)}" aria-label="Excluir despesa ${esc(item.description)}">Excluir</button>
@@ -591,35 +601,11 @@
         : '<tr><td colspan="6" class="expense-empty">Nenhuma despesa encontrada para os filtros selecionados.</td></tr>';
 
       content.innerHTML = `
-        <div class="stats finance-stats">
-          <div class="stat card"><span>Faturamento</span><strong>${money(income)}</strong></div>
-          <div class="stat card expense-total"><span>Despesas</span><strong>${money(expenses)}</strong></div>
-          <div class="stat card profit-total"><span>Lucro</span><strong>${money(income - expenses)}</strong></div>
-        </div>
-        <div class="card">
-          <h3>Evolução financeira</h3>
-          <p>Comparação dos últimos 6 meses.</p>
-          <div class="finance-legend"><span><i class="income-dot"></i>Faturamento</span><span><i class="expense-dot"></i>Despesas</span></div>
-          <div class="finance-chart">${chart}</div>
-        </div>
-        <div class="dashboard-grid">
-          <div class="card"><h3>Fechamento de hoje</h3><p>Entradas: <strong>${money(dayIncome)}</strong></p><p>Despesas: <strong>${money(dayExpenses)}</strong></p><p>Resultado: <strong>${money(dayIncome - dayExpenses)}</strong></p></div>
-          <div class="card"><h3>Fechamento do mês</h3><p>Entradas: <strong>${money(monthIncome)}</strong></p><p>Despesas: <strong>${money(monthExpenses)}</strong></p><p>Resultado: <strong>${money(monthIncome - monthExpenses)}</strong></p></div>
-          <div class="card"><h3>Formas de pagamento</h3><div class="rank-list">${Object.entries(payments).sort((a, b) => b[1] - a[1]).map(([key, value]) => `<div><span>${esc(key)}</span><strong>${money(value)}</strong></div>`).join('') || '<p class="empty">Nenhuma entrada registrada.</p>'}</div></div>
-        </div>
-        <div class="card">
-          <h3>Relatório mensal</h3>
-          <p>Resumo dos últimos 6 meses.</p>
-          <div class="table-wrap"><table><thead><tr><th>Mês</th><th>Atendimentos</th><th>Faturamento</th><th>Despesas</th><th>Lucro</th></tr></thead><tbody>${months.map(item => `<tr><td>${esc(monthLabel(item.key))}</td><td>${item.count}</td><td>${money(item.income)}</td><td>${money(item.expenses)}</td><td><strong>${money(item.income - item.expenses)}</strong></td></tr>`).join('')}</tbody></table></div>
-        </div>
-        <div class="dashboard-grid">
-          <div class="card"><h3>Serviços mais realizados</h3><div class="rank-list">${topServices.map(([key, value]) => `<div><span>${esc(key)}</span><strong>${value}</strong></div>`).join('') || '<p class="empty">Nenhum atendimento registrado.</p>'}</div></div>
-          <div class="card"><h3>Resumo do período</h3><p>Total de atendimentos: <strong>${incomeData.length}</strong></p><p>Ticket médio: <strong>${money(incomeData.length ? income / incomeData.length : 0)}</strong></p><p>Resultado líquido: <strong>${money(income - expenses)}</strong></p></div>
-        </div>
-        <div class="card finance-filter-card">
+<div class="finance-workspace">        <div class="card finance-filter-card">
           <div class="card-head finance-filter-head">
-            <div><p class="eyebrow">RELATÓRIO DETALHADO</p><h3>Filtros financeiros</h3><p>Escolha o período e a categoria para consultar ou exportar.</p></div>
+            <div><h3>Resumo financeiro</h3><p>${esc(filtered.range.label)} · ${filtered.expenses.length} despesas</p></div>
             <div class="finance-report-actions">
+              <button id="newExpense" class="primary expense-new" type="button">+ Nova despesa</button>
               <button id="clearFinanceFilters" class="action" type="button">Limpar filtros</button>
               <button id="exportFinancePdf" class="primary pdf-button" type="button">Exportar PDF</button>
             </div>
@@ -645,30 +631,43 @@
               <button id="applyFinanceDates" class="action" type="button">Aplicar datas</button>
             </div>
           </div>
-          <div class="filtered-summary">
-            <div><span>Período selecionado</span><strong>${esc(filtered.range.label)}</strong></div>
-            <div><span>Faturamento</span><strong>${money(filteredIncomeTotal)}</strong></div>
-            <div><span>Despesas</span><strong>${money(filteredExpenseTotal)}</strong></div>
-            <div><span>Lançamentos</span><strong>${filtered.expenses.length}</strong></div>
-            <div><span>Média por despesa</span><strong>${money(averageExpense)}</strong></div>
-            <div><span>Resultado</span><strong>${money(filteredIncomeTotal - filteredExpenseTotal)}</strong></div>
-          </div>
         </div>
-        <div class="card expense-card">
-          <div class="card-head">
-            <div><p class="eyebrow">SAÍDAS</p><h3>Despesas</h3><p>Cadastre, edite e acompanhe as saídas do Studio.</p></div>
-            <button id="newExpense" class="primary expense-new" type="button">+ Nova despesa</button>
-          </div>
-          <div class="table-wrap expense-table-wrap">
-            <table class="expense-table">
-              <thead><tr><th>Data</th><th>Descrição</th><th>Categoria</th><th>Pagamento</th><th>Valor</th><th>Ações</th></tr></thead>
-              <tbody>${expenseRows}</tbody>
-            </table>
-          </div>
-        </div>`;
+<div class="stats finance-stats">
+          <div class="stat card"><span>Entradas no período</span><strong>${money(filteredIncomeTotal)}</strong></div>
+          <div class="stat card expense-total"><span>Despesas no período</span><strong>${money(filteredExpenseTotal)}</strong></div>
+          <div class="stat card profit-total"><span>Resultado no período</span><strong>${money(filteredIncomeTotal - filteredExpenseTotal)}</strong></div>
+        </div>
+<details class="finance-block" data-finance-section="expenses" ${openSections.has('expenses') ? 'open' : ''}><summary><span><strong>Despesas</strong><small>${filtered.expenses.length} lançamentos · ${money(filteredExpenseTotal)}</small></span><span class="finance-chevron" aria-hidden="true">⌄</span></summary><div class="finance-block-body"><div class="table-wrap expense-table-wrap"><table class="expense-table"><thead><tr><th>Data</th><th>Descrição</th><th>Categoria</th><th>Pagamento</th><th>Valor</th><th>Ações</th></tr></thead><tbody>${expenseRows}</tbody></table></div><div class="finance-pagination"><button id="financePrev" class="action" type="button" ${expensePage === 0 ? 'disabled' : ''}>Anterior</button><span>Página ${expensePage + 1} de ${expensePages}</span><button id="financeNext" class="action" type="button" ${expensePage + 1 >= expensePages ? 'disabled' : ''}>Próxima</button></div></div></details><details class="finance-block" data-finance-section="evolution" ${openSections.has('evolution') ? 'open' : ''}><summary><span><strong>Evolução e relatório mensal</strong><small>Comparação dos últimos 6 meses</small></span><span class="finance-chevron" aria-hidden="true">⌄</span></summary><div class="finance-block-body">        <div class="card">
+          <h3>Evolução financeira</h3>
+          <p>Comparação dos últimos 6 meses.</p>
+          <div class="finance-legend"><span><i class="income-dot"></i>Faturamento</span><span><i class="expense-dot"></i>Despesas</span></div>
+          <div class="finance-chart">${chart}</div>
+        </div>
+        <div class="card">
+          <h3>Relatório mensal</h3>
+          <p>Resumo dos últimos 6 meses.</p>
+          <div class="table-wrap"><table><thead><tr><th>Mês</th><th>Atendimentos</th><th>Faturamento</th><th>Despesas</th><th>Lucro</th></tr></thead><tbody>${months.map(item => `<tr><td>${esc(monthLabel(item.key))}</td><td>${item.count}</td><td>${money(item.income)}</td><td>${money(item.expenses)}</td><td><strong>${money(item.income - item.expenses)}</strong></td></tr>`).join('')}</tbody></table></div>
+        </div>
+</div></details><details class="finance-block" data-finance-section="closing" ${openSections.has('closing') ? 'open' : ''}><summary><span><strong>Fechamentos e pagamentos</strong><small>Hoje, mês atual e formas de pagamento</small></span><span class="finance-chevron" aria-hidden="true">⌄</span></summary><div class="finance-block-body">        <div class="dashboard-grid">
+          <div class="card"><h3>Fechamento de hoje</h3><p>Entradas: <strong>${money(dayIncome)}</strong></p><p>Despesas: <strong>${money(dayExpenses)}</strong></p><p>Resultado: <strong>${money(dayIncome - dayExpenses)}</strong></p></div>
+          <div class="card"><h3>Fechamento do mês</h3><p>Entradas: <strong>${money(monthIncome)}</strong></p><p>Despesas: <strong>${money(monthExpenses)}</strong></p><p>Resultado: <strong>${money(monthIncome - monthExpenses)}</strong></p></div>
+          <div class="card"><h3>Formas de pagamento</h3><div class="rank-list">${Object.entries(payments).sort((a, b) => b[1] - a[1]).map(([key, value]) => `<div><span>${esc(key)}</span><strong>${money(value)}</strong></div>`).join('') || '<p class="empty">Nenhuma entrada registrada.</p>'}</div></div>
+        </div>
+</div></details><details class="finance-block" data-finance-section="overall" ${openSections.has('overall') ? 'open' : ''}><summary><span><strong>Resumo geral e serviços</strong><small>Valores de todo o histórico</small></span><span class="finance-chevron" aria-hidden="true">⌄</span></summary><div class="finance-block-body"><div class="stats finance-stats">
+          <div class="stat card"><span>Faturamento</span><strong>${money(income)}</strong></div>
+          <div class="stat card expense-total"><span>Despesas</span><strong>${money(expenses)}</strong></div>
+          <div class="stat card profit-total"><span>Lucro</span><strong>${money(income - expenses)}</strong></div>
+        </div>
+        <div class="dashboard-grid">
+          <div class="card"><h3>Serviços mais realizados</h3><div class="rank-list">${topServices.map(([key, value]) => `<div><span>${esc(key)}</span><strong>${value}</strong></div>`).join('') || '<p class="empty">Nenhum atendimento registrado.</p>'}</div></div>
+          <div class="card"><h3>Resumo do período</h3><p>Total de atendimentos: <strong>${incomeData.length}</strong></p><p>Ticket médio: <strong>${money(incomeData.length ? income / incomeData.length : 0)}</strong></p><p>Resultado líquido: <strong>${money(income - expenses)}</strong></p></div>
+        </div>
+</div></details></div>`;
 
       wireExpenseActions(expenseData);
       wireFinanceFilters(incomeData, expenseData);
+      document.getElementById('financePrev')?.addEventListener('click', () => { expensePage = Math.max(0, expensePage - 1); renderFinance(true); });
+      document.getElementById('financeNext')?.addEventListener('click', () => { expensePage = Math.min(expensePages - 1, expensePage + 1); renderFinance(true); });
     } catch (error) {
       content.innerHTML = `<div class="card finance-error"><h3>Não foi possível carregar o Financeiro</h3><p class="error">${esc(error.message || 'Tente novamente em alguns instantes.')}</p><button id="retryFinance" class="primary" type="button">Tentar novamente</button></div>`;
       document.getElementById('retryFinance')?.addEventListener('click', renderFinance);
