@@ -67,3 +67,22 @@
 .review-client-card .review-public-consent span{font-size:14px;line-height:1.6}
 @media(max-width:900px){.space-review-list{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:600px){.space-reviews{padding:20px 16px;margin-top:26px}.space-reviews-heading{flex-direction:column;align-items:stretch;gap:10px}.space-review-list{grid-template-columns:1fr}.space-review-card{padding:18px}.space-review-button{width:100%}}
+
+/* Google Maps reviews transcribed from the client-provided recording. */
+.google-reviews{margin-top:24px;padding-top:24px;border-top:1px solid rgba(100,19,55,.12)}
+.google-reviews-heading{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:20px}
+.google-reviews-heading h3,.site-reviews-heading{margin:0;color:var(--wine);font:500 24px/1.3 'Playfair Display',serif}
+.google-reviews-heading p{margin:7px 0 0;color:var(--muted);font-size:14px;line-height:1.6}
+.google-reviews-link{display:inline-flex;align-items:center;justify-content:center;gap:8px;flex-shrink:0;min-height:44px;padding:10px 14px;border:1px solid var(--wine);border-radius:12px;color:var(--wine);background:#fff;font-size:13px;font-weight:700;text-decoration:none}
+.google-review-author{display:flex;align-items:center;gap:10px;margin-bottom:14px;min-width:0}
+.google-review-initial{display:grid;place-items:center;flex:0 0 auto;width:38px;height:38px;border-radius:50%;background:var(--lilac-soft,#f2eafa);color:var(--wine);font-weight:700}
+.google-review-author strong{display:block;overflow-wrap:anywhere;color:var(--wine);font-size:14px;line-height:1.5}
+.google-review-author small{display:block;margin-top:3px;font-size:12px;color:var(--muted)}
+.google-review-card blockquote{margin:14px 0;padding:0;border:0;font-style:normal}
+.google-review-service{font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:0}
+.google-reviews-more>summary{min-height:48px;padding:14px 16px;border:1px solid rgba(100,19,55,.15);border-radius:12px;background:#fff;color:var(--wine);font-size:14px;font-weight:700;cursor:pointer}
+.google-reviews-more[open]>summary{margin-bottom:16px}
+.google-reviews-more>summary:focus-visible,.google-reviews-link:focus-visible{outline:3px solid var(--lilac);outline-offset:3px}
+.google-reviews-note{font-size:12px;color:var(--muted);line-height:1.6;margin:16px 0 24px}
+.site-reviews-heading{padding-top:24px;border-top:1px solid rgba(100,19,55,.12);margin:0 0 18px}
+@media(max-width:600px){.google-reviews-heading{flex-direction:column;align-items:stretch}.google-reviews-link{width:100%}}
