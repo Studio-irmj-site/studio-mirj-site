@@ -10,8 +10,9 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
   <script src="../supabase-config.js?v=6"></script>
+  <link rel="stylesheet" href="../ir-theme.css?v=1">
 </head>
-<body>
+<body class="ir-admin">
   <div id="app">
     <section id="login" class="login">
       <div class="login-card">
@@ -29,7 +30,8 @@
     </section>
 
     <section id="panel" class="panel hidden">
-      <aside>
+      <button id="irMenuBackdrop" class="ir-menu-backdrop" type="button" aria-label="Fechar menu"></button>
+      <aside id="irAdminNavigation">
         <div class="brand">
           <div class="logo mini">I.R</div>
           <div><strong>Studio I.R</strong><small>Administração</small></div>
@@ -69,6 +71,7 @@
       </aside>
       <main>
         <header>
+          <button id="avMenuToggle" type="button" aria-label="Abrir menu administrativo" aria-controls="irAdminNavigation" aria-expanded="false">☰</button>
           <div><p class="eyebrow">STUDIO I.R</p><h2 id="title">Dashboard</h2></div>
           <a href="../" target="_blank">Ver site ↗</a>
         </header>
@@ -77,6 +80,7 @@
     </section>
   </div>
 
+  <script src="ir-navigation.js?v=1"></script>
   <script src="../professionals.js?v=1"></script>
   <script src="admin.js?v=7"></script>
   <script src="receipts.js?v=1"></script>

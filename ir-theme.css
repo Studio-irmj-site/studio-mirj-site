@@ -1,0 +1,165 @@
+/* Espaço I.R — visual compartilhado do site e administração */
+:root,body.ir-admin{
+ --wine:#1b1b18;--wine-deep:#1b1b18;--ink:#242420;--muted:#756f63;
+ --paper:#f6f4ee;--cream:#f6f4ee;--bg:#f6f4ee;--surface:#fffefa;
+ --surface-soft:#f1ede3;--line:#ded9ce;--line-strong:#c6bead;--gold:#a17e38;
+ --rose:#a17e38;--rose-50:#f1ede3;--rose-100:#e9e2d3;--rose-300:#c6ae79;
+ --rose-500:#a17e38;--rose-700:#806125;--lilac:#a17e38;--lilac-soft:#f1ede3;
+ --lilac-50:#f6f4ee;--lilac-100:#eee8dc;--lilac-300:#c6ae79;
+ --shadow-sm:0 5px 20px #24242006;--shadow-md:0 16px 44px #2424200c;
+ --radius-lg:22px;--radius-md:18px;
+}
+body{background:var(--cream);color:var(--ink)}
+h1,h2,h3{line-height:1.2}
+body button:focus-visible,body a:focus-visible,body input:focus-visible,body select:focus-visible,body textarea:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
+.topbar,.contact-band{background:var(--wine-deep)}
+.topbar__inner{flex-wrap:wrap}
+.site-header{background:#f6f4eef5;box-shadow:none;border-color:var(--line)}
+.brand-logo__sub{color:var(--muted)}.brand-logo__spark,.hero-model__spark{color:var(--gold)}
+.main-nav button{font-size:14px;color:var(--ink);letter-spacing:.04em}
+.budget-top,.hero-model__primary{background:var(--wine);border-color:var(--wine);border-radius:12px;color:#f7eed9;box-shadow:none}
+.budget-top:hover,.hero-model__primary:hover{background:#36352e}
+.hero-model{background:var(--cream);border-color:var(--line)}
+.hero-model h1{color:var(--ink);letter-spacing:-.02em;line-height:1.15}
+.hero-model h1 em{color:var(--gold)}
+.hero-model p{color:var(--muted);font-size:16px}
+.hero-model__secondary{color:var(--ink);border-color:var(--line-strong);border-radius:12px}
+.hero-model__secondary:hover{background:var(--surface-soft)}
+.hero-model__visual{border:1px solid var(--line);border-radius:22px;overflow:hidden;box-shadow:var(--shadow-md)}
+.hero-model__visual-label{right:0;background:var(--wine);color:#f7eed9;border-radius:12px 0 0 12px}
+.hero-model__eyebrow,.section-kicker,.panel-heading .section-kicker,.works-title small{color:var(--gold);font-size:13px}
+.works{background:var(--cream)}
+.works-title h2,.panel-heading h1{color:var(--ink)}
+.work-card,.space-card,.info-card,.services-section,.space-photo{background:var(--surface);border-color:var(--line);border-radius:18px;box-shadow:none}
+.work-card__media{background:var(--surface-soft)}
+.work-card__caption{background:var(--surface);color:var(--ink);border-color:var(--line);font-size:14px}
+.work-card__caption span{color:var(--gold)}
+.space-card span,.info-card__icon,.service-card__icon{background:var(--surface-soft);color:var(--gold)}
+.space-photo figcaption{background:var(--surface);color:var(--ink)}
+.space-card p,.panel-heading p{font-size:16px}
+.info-card small,.contact-item small{font-size:14px}
+.contact-item small{color:#dfc68f}
+.contact-item p{font-size:14px;color:#e5e0d5}
+.contact-icon{color:#dfc68f;border-color:#ffffff50}
+.mini-footer{background:#25251f}
+.mini-footer__inner{font-size:14px;color:#e5e0d5}
+.contact-cta{background:var(--wine);border-radius:18px}
+.contact-cta a{border-radius:12px;color:var(--ink)}
+.category-button{border-radius:12px;font-size:14px;min-height:44px}
+.service-card{background:var(--surface);border-color:var(--line);border-radius:18px;box-shadow:none}
+.service-card:hover{border-color:var(--gold);box-shadow:var(--shadow-sm)}
+.service-card[aria-pressed="true"]{border-color:var(--gold);background:#f5f0e4;box-shadow:0 0 0 1px var(--gold)}
+.service-card__copy strong,.service-card__price strong{color:var(--ink);font-size:16px}
+.service-card__copy p,.estimate-note p{font-size:14px}
+.service-card__price small{font-size:12px}
+.service-card[aria-pressed="true"] .service-card__check{background:var(--wine);border-color:var(--wine)}
+.estimate-note{background:#f5f0e4;border-color:#d8c9a6}
+.quote-bar{background:#f6f4eef5;border-color:var(--line);box-shadow:0 -6px 22px #24242008}
+body[data-current-page="servicos"] .panel-shell{padding-bottom:180px}
+.whatsapp-button{background:var(--wine);border-radius:12px;color:#f7eed9;box-shadow:none;font-size:14px}
+.clear-button,.retry-button{color:#806125;font-size:14px}
+body .request-modal{background:#17171399}
+body .request-card{background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow-md)}
+body .request-card h3{color:var(--ink)}
+body .request-card>p,body .request-steps,body .request-item small,body .request-total span,body .request-review dt,body .request-review p,body .request-saved-contact span,body .request-remember,body .request-contact-status{color:var(--muted);font-size:14px}
+body .request-item,body .request-review,body .request-saved-contact{background:var(--cream);border-color:var(--line)}
+body .request-total{background:var(--surface-soft)}
+body .request-total strong{color:var(--ink)}
+body .request-item strong,body .request-field{font-size:14px}
+body .request-field input,body .request-field select,body .request-field textarea{font-size:16px;color:var(--ink);border-color:var(--line);min-height:44px}
+body .request-submit{background:var(--wine);color:#f7eed9}
+body .request-cancel{background:var(--surface-soft);color:var(--ink)}
+body .request-item__controls button,body .request-contact-actions button{background:var(--surface);color:var(--ink);border-color:var(--line);min-height:40px}
+body .request-card :focus-visible{outline-color:var(--gold)}
+body .request-remember input{accent-color:var(--gold)}
+body .request-card .availability-help,body .request-card .request-info{color:var(--muted)!important;font-size:14px!important}
+.ir-admin{font-size:16px}
+.ir-admin .login{background:var(--cream)}
+.ir-admin .login-card{background:var(--surface);border-color:var(--line);box-shadow:var(--shadow-md)}
+.ir-admin .login-card p{font-size:14px}
+.ir-admin .eyebrow{color:var(--gold);font-size:12px}
+.ir-admin .panel aside{background:var(--wine)}
+.ir-admin .panel main{max-width:1440px;padding:32px 40px;min-width:0}
+.ir-admin .panel header{gap:16px;border-bottom:1px solid var(--line);padding-bottom:22px}
+.ir-admin .panel header .eyebrow{color:var(--muted);letter-spacing:.1em}
+.ir-admin .panel header h2{font-size:28px}
+.ir-admin .panel header a{background:var(--surface);color:var(--ink);font-size:14px}
+.ir-admin .hero,.ir-admin .card,.ir-admin .stat{background:var(--surface);border:1px solid var(--line);border-radius:18px;box-shadow:none}
+.ir-admin .hero{background:var(--surface-soft)}
+.ir-admin .primary{background:var(--wine);color:#f7eed9;min-height:44px;font-size:14px}
+.ir-admin .action{background:var(--surface);color:#646158;border:1px solid var(--line);font-size:14px;min-height:40px}
+.ir-admin .action:hover{background:var(--surface-soft)}
+.ir-admin .danger{color:#a05245}
+.ir-admin .danger-button{background:#a05245}
+.ir-admin .badge.off,.ir-admin .category-pill{background:var(--surface-soft);color:var(--muted)}
+.ir-admin .price{color:#806125}
+.ir-admin .stat span{font-size:14px;text-transform:none}
+.ir-admin .stat strong{color:var(--ink);font-size:32px}
+.ir-admin .expense-total strong{color:#a05245}
+.ir-admin .profit-total strong{color:#52775e}
+.ir-admin .card>p,.ir-admin .card-head p,.ir-admin label,.ir-admin .rank-list>div,.ir-admin .empty{font-size:14px}
+.ir-admin input,.ir-admin select,.ir-admin textarea{font-size:16px;border-color:var(--line);color:var(--ink)}
+.ir-admin input:focus,.ir-admin select:focus,.ir-admin textarea:focus{border-color:var(--gold);box-shadow:none}
+.ir-admin .table th,.ir-admin .table td,.ir-admin .table-wrap th,.ir-admin .table-wrap td{font-size:14px}
+.ir-admin .finance-filter-card{background:var(--surface)}
+.ir-admin .filtered-summary>div,.ir-admin .receipt-summary{background:var(--cream)}
+.ir-admin .filtered-summary span{font-size:12px}
+.ir-admin .filtered-summary strong{font-size:16px;white-space:normal;overflow-wrap:anywhere}
+.ir-admin .finance-bar.income{background:var(--wine)}
+.ir-admin .finance-bar.expense,.ir-admin .expense-dot{background:var(--gold)}
+.ir-admin .expense-table tbody tr:hover{background:var(--cream)}
+.ir-admin .expense-dialog,.ir-admin .av-generator{background:var(--surface);color:var(--ink);border-color:var(--line)}
+.ir-admin .expense-close,.ir-admin .expense-cancel{background:var(--surface-soft)}
+.ir-admin .expense-modal-backdrop{background:#17171399}
+.ir-admin .expense-note,.ir-admin .finance-month small{font-size:12px}
+.ir-admin #serviceList>.service{background:var(--surface);border-color:var(--line);box-shadow:none}
+.ir-admin #serviceList>.service:hover{border-color:var(--gold);box-shadow:var(--shadow-sm)}
+.ir-admin #serviceList .service-main::before{background:var(--surface-soft);color:var(--gold);box-shadow:none}
+.ir-admin #serviceList .service-main .empty{background:var(--surface-soft);color:var(--muted);font-size:12px}
+.ir-admin #serviceList .badge{font-size:12px}
+.ir-admin .receipt-action,.ir-admin .receipt-whatsapp{color:#267149}
+.ir-admin .receipt-whatsapp{background:#218a55;color:white}
+.ir-admin .av-generator p,.ir-admin .av-generator label,.ir-admin .av-generator legend{font-size:14px}
+.ir-menu-backdrop{display:none}
+@media(min-width:701px){.ir-admin #avMenuToggle{display:none}}
+@media(max-width:700px){
+ .ir-admin .panel main{padding:20px 16px;width:100%}
+ .ir-admin .panel aside{display:none}
+ .ir-admin .panel.av-menu-open aside{display:flex;position:fixed;inset:0 auto 0 0;width:min(280px,80vw);z-index:100;box-shadow:none;overflow-y:auto}
+ .ir-admin .panel.av-menu-open .brand div:not(.logo),.ir-admin .panel.av-menu-open .nav span,.ir-admin .panel.av-menu-open .logout span{display:block}
+ .ir-admin .panel.av-menu-open .nav{justify-content:flex-start;padding-inline:12px;font-size:14px}
+ .ir-admin .panel.av-menu-open .ir-menu-backdrop{display:block;position:fixed;inset:0;background:#17171399;z-index:99}
+ .ir-admin .panel #avMenuToggle{display:block;flex:0 0 42px;height:42px;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:12px;font-size:24px}
+ .ir-admin .panel header{gap:12px;margin-bottom:20px}
+ .ir-admin .panel header>div{flex:1;min-width:0}
+ .ir-admin .panel header h2{font-size:20px;overflow-wrap:anywhere}
+ .ir-admin .panel header .eyebrow{font-size:10px;margin:0}
+ .ir-admin .panel header a{font-size:12px;padding:10px}
+ .ir-admin .stats,.ir-admin .finance-stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+ .ir-admin .stat{padding:16px;min-width:0}
+ .ir-admin .stat strong{font-size:26px;overflow-wrap:anywhere}
+ .ir-admin .stat span{font-size:13px}
+ .ir-admin .login-card{padding:28px 22px}
+ .ir-admin .panel main .card{min-width:0}
+ .ir-admin .toolbar{flex-wrap:wrap}
+ .main-nav{gap:18px}
+ .budget-top{font-size:12px;padding-inline:14px;min-height:44px}
+ .hero-model h1{font-size:clamp(34px,9vw,48px)}
+ .hero-model p,.panel-heading p{font-size:16px}
+ .work-card__caption{font-size:13px}
+ .mini-footer__inner{font-size:12px}
+ body[data-current-page="servicos"] .panel-shell{padding-bottom:220px}
+}
+@media(max-width:360px){.ir-admin .stats,.ir-admin .finance-stats{grid-template-columns:1fr}.site-header__inner{gap:12px}.budget-top{font-size:11px;padding-inline:10px}}
+
+.ir-admin .budget-filter{background:var(--surface);border-color:var(--line);color:var(--muted);font-size:14px;border-radius:12px;min-height:44px}
+.ir-admin .budget-filter.active{background:var(--wine);border-color:var(--wine);color:white}
+.ir-admin .budget-item{background:var(--surface);border-color:var(--line);box-shadow:none}
+.ir-admin .budget-main strong,.ir-admin .budget-value strong{color:var(--ink)}
+.ir-admin .budget-meta,.ir-admin .budget-note{color:var(--muted);font-size:14px}
+.ir-admin .budget-status{background:var(--surface-soft);color:#806125;font-size:12px}
+.ir-admin .budget-actions{border-color:var(--line)}
+.ir-admin .budget-confirm{background:var(--wine)}
+.ir-admin .budget-reject{border-color:#a05245;color:#a05245}
+.ir-admin .budget-empty{background:var(--surface);color:var(--muted);border-color:var(--line)}
+.ir-admin .nav-budget-badge{background:var(--gold);color:white}
