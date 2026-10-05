@@ -163,3 +163,76 @@ body .request-card .availability-help,body .request-card .request-info{color:var
 .ir-admin .budget-reject{border-color:#a05245;color:#a05245}
 .ir-admin .budget-empty{background:var(--surface);color:var(--muted);border-color:var(--line)}
 .ir-admin .nav-budget-badge{background:var(--gold);color:white}
+
+/* ADM — cores originais, com layout atual preservado */
+body.ir-admin{
+ --wine:#421027;--wine-deep:#32111f;--ink:#321321;--muted:#8b7780;
+ --bg:#f8f5f6;--cream:#f8f5f6;--paper:#f8f5f6;--surface:#fff;
+ --surface-soft:#f7edf1;--line:#eadfe4;--line-strong:#d9c5d2;
+ --gold:#c8a25d;--rose:#c34d78;--rose-50:#fff0f4;--rose-100:#ffe0e9;
+ --rose-300:#f09ab4;--rose-500:#c34d78;--rose-700:#9b2f57;
+ --lilac:#b99ad5;--lilac-soft:#f2eafa;--lilac-50:#f8f3ff;
+ --lilac-100:#eee2ff;--lilac-300:#ceb2ee;
+ background:var(--bg);color:var(--ink);
+}
+.ir-admin .login{background:linear-gradient(135deg,#f7e2e9,#fbf8f3)}
+.ir-admin .hero{background:linear-gradient(120deg,#f8dfe8,#fff8ed)}
+.ir-admin .eyebrow{color:var(--rose)}
+.ir-admin .primary{background:linear-gradient(135deg,var(--rose),var(--wine));color:#fff}
+.ir-admin .action{background:#fff4f7;color:var(--wine);border-color:var(--line)}
+.ir-admin .action:hover{background:#fce5ed}
+.ir-admin .danger{color:#a02b4e}
+.ir-admin .danger-button{background:#a02b4e;color:#fff}
+.ir-admin .price{color:var(--rose)}
+.ir-admin .stat strong{color:var(--wine)}
+.ir-admin .expense-total strong{color:#b3264d}
+.ir-admin .profit-total strong{color:#267149}
+.ir-admin .badge.off{background:#f3eef0;color:#856f79}
+.ir-admin .category-pill{background:#f7edf1;color:var(--wine)}
+.ir-admin .finance-filter-card{background:linear-gradient(145deg,#fff,#fdf8fa)}
+.ir-admin .finance-bar.income{background:linear-gradient(180deg,var(--rose),var(--wine))}
+.ir-admin .finance-bar.expense{background:#d7a3b5}
+.ir-admin .expense-dot{background:var(--rose)}
+.ir-admin .expense-close{background:#f8f1f4}
+.ir-admin .expense-cancel{background:#f7f1f3}
+.ir-admin .expense-table tbody tr:hover{background:#fff9fb}
+.ir-admin .expense-modal-backdrop{background:#280917b8}
+.ir-admin .filtered-summary>div{background:#fff}
+.ir-admin .receipt-summary{background:#fdf9fa}
+.ir-admin #serviceList>.service{background:linear-gradient(155deg,#fff,#fffafa)}
+.ir-admin #serviceList .service-main::before{background:linear-gradient(145deg,#f7e5ec,#f1e8f7);color:var(--wine)}
+.ir-admin #serviceList .service-main .empty{background:#f7edf1;color:#7b5062}
+.ir-admin #serviceList .price{color:var(--rose)}
+.ir-admin .receipt-action{background:#edf8f1;color:#267149}
+.ir-admin .receipt-action:hover{background:#dff2e6}
+.ir-admin .budget-filter.active,.ir-admin .budget-confirm{background:#4b1630;border-color:#4b1630;color:#fff}
+.ir-admin .budget-value strong{color:#9b2f57}
+.ir-admin .budget-status{background:#fff0f4;color:#9b2f57}
+.ir-admin .budget-reject{border-color:#c84c66;color:#a52d49}
+.ir-admin .nav-budget-badge{background:#9b2f57;color:#fff}
+.ir-admin .av-intro .eyebrow{color:var(--rose)}
+.ir-admin .av-intro h1{color:var(--wine)}
+.ir-admin .av-workspace .primary{background:linear-gradient(135deg,var(--rose),var(--wine));color:#fff}
+.ir-admin .av-workspace .action{background:#fff4f7;border-color:var(--line);color:var(--wine)}
+.ir-admin .av-workspace .action:hover{background:#fce5ed}
+.ir-admin .av-workspace .card{background:#fff;border-color:var(--line)}
+.ir-admin .av-workspace .av-quick-filters .selected{background:var(--wine);border-color:var(--wine);color:#fff}
+.ir-admin .av-metric{background:#fcf7fb;border-color:#eadce6}
+.ir-admin .av-metric strong{color:#641337}
+.ir-admin .av-metric span,.ir-admin .av-metric small{color:#78616c}
+.ir-admin .av-metric--active strong{color:#267149}
+.ir-admin .av-metric--blocked strong{color:#a02b4e}
+.ir-admin .av-day{background:#fff;border-color:#eadce6}
+.ir-admin .av-day>summary{background:#fcf8fb}
+.ir-admin .av-day__title,.ir-admin .av-slot__time{color:#4b1630}
+.ir-admin .av-day>summary::after{color:#641337}
+.ir-admin .av-slot{background:#fff;border-color:#e8dce5}
+.ir-admin .av-slot--blocked{background:#faf7f8}
+.ir-admin .av-slot__state{background:#edf8f0;color:#276745}
+.ir-admin .av-slot--blocked .av-slot__state{background:#eee8ec;color:#77616c}
+.ir-admin .av-workspace .danger{color:#a02b4e}
+.ir-admin .av-empty{color:#78616c;border-color:#d9c5d2}
+.ir-admin .av-generator::backdrop{background:#22111a70}
+.ir-admin .av-menu-open .ir-menu-backdrop{background:#28091799}
+.ir-admin input:focus,.ir-admin select:focus,.ir-admin textarea:focus{border-color:var(--rose)}
+.ir-admin .av-workspace button:focus-visible,.ir-admin .av-day summary:focus-visible{outline-color:var(--lilac)}
