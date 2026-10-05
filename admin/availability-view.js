@@ -5,6 +5,7 @@ function filter(rows,options){return rows.filter(row=>{
  else if(options.period==='week'){const end=new Date(options.today+'T12:00:00Z');end.setUTCDate(end.getUTCDate()+6);if(row.available_date<options.today||row.available_date>end.toISOString().slice(0,10))return false;}
  else if(options.period==='upcoming'&&row.available_date<options.today)return false;
  else if(options.period==='past'&&row.available_date>=options.today)return false;
+ if(options.strictProfessional&&['raquel','iarytsa'].includes(options.professional)&&row.professional!==options.professional)return false;
  if(options.professional==='shared'&&row.professional)return false;
  if(['raquel','iarytsa'].includes(options.professional)&&row.professional&&row.professional!==options.professional)return false;
  if(options.status==='active'&&!row.active)return false;

@@ -236,3 +236,12 @@ body.ir-admin{
 .ir-admin .av-menu-open .ir-menu-backdrop{background:#28091799}
 .ir-admin input:focus,.ir-admin select:focus,.ir-admin textarea:focus{border-color:var(--rose)}
 .ir-admin .av-workspace button:focus-visible,.ir-admin .av-day summary:focus-visible{outline-color:var(--lilac)}
+
+/* Agendas independentes por profissional */
+.ir-admin .av-professional-agendas{display:flex;flex-wrap:wrap;gap:10px;margin:24px 0 12px}
+.ir-admin .av-professional-agendas button{flex:1 1 180px;min-height:52px;margin:0;padding:12px 18px;font-size:16px;border-radius:14px}
+.ir-admin .av-professional-agendas button.selected{background:var(--wine);border-color:var(--wine);color:#fff}
+.ir-admin .av-professional-agendas [hidden]{display:none!important}
+.ir-admin .av-intro .av-agenda-help{font-size:14px;line-height:1.6;color:var(--muted)}
+.ir-admin .av-slot__professional{margin:0;color:var(--wine);font-size:14px;font-weight:700}
+.ir-admin .av-workspace .av-success{margin:0;padding:12px 16px;border:1px solid #c9e1d1;border-radius:12px;background:#edf8f1;color:#267149;font-size:14px}

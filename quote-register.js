@@ -32,13 +32,10 @@
   }
 
   function matchingSlots(rows, preference) {
-    return (rows || []).filter(row => ["raquel", "iarytsa"].includes(row.professional) && (preference === "any" || row.professional === preference));
+    return window.StudioProfessionals.visibleSlots(rows, preference);
   }
-
   function resolveProfessional(rows, preference, date, time) {
-    if (preference !== "any") return preference;
-    if (!date && !time) return "any";
-    return matchingSlots(rows, preference).find(row => row.available_date === date && timeValue(row.available_time) === time)?.professional || "";
+    return window.StudioProfessionals.resolveSlotProfessional(rows, preference, date, time);
   }
 
   function professionalLabel(value) {
@@ -303,19 +300,34 @@
       if (event.shiftKey && (document.activeElement === first || document.activeElement === reviewBox)) { event.preventDefault(); last?.focus(); }
       else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
     });
-    professionalSelect.addEventListener("change",()=>{dateSelect.value="";timeSelect.value="";refreshAvailability();});
+    let availabilityVersion = 0;
+    async function reloadAvailability() {
+      const version = ++availabilityVersion;
+      dateSelect.disabled = true;
+      timeSelect.disabled = true;
+      infoBox.textContent = professionalSelect.value ? "Atualizando horários da profissional…" : "Selecione a profissional para ver os horários.";
+      try {
+        const rows = await loadAvailability();
+        if (version !== availabilityVersion || !modal.isConnected) return;
+        availabilityRows = rows || [];
+        refreshAvailability();
+      } catch (error) {
+        if (version !== availabilityVersion || !modal.isConnected) return;
+        availabilityRows = [];
+        refreshAvailability();
+        infoBox.textContent = "Não foi possível carregar a agenda agora; o orçamento continua disponível pelo WhatsApp.";
+      }
+    }
+    professionalSelect.addEventListener("change", () => {
+      editing();
+      dateSelect.value = "";
+      timeSelect.value = "";
+      availabilityRows = [];
+      reloadAvailability();
+    });
     dateSelect.addEventListener("change", refreshAvailability);
     refreshAvailability();
-
-    loadAvailability().then((rows) => {
-      availabilityRows = rows || [];
-      refreshAvailability();
-    }).catch((error) => {
-      console.warn(error);
-      availabilityRows = [];
-      refreshAvailability();
-      infoBox.textContent = "Não foi possível carregar a agenda agora; o orçamento continua disponível pelo WhatsApp.";
-    });
+    reloadAvailability();
 
     modal.querySelector("#appointmentRequestForm").addEventListener("submit", async (event) => {
       event.preventDefault();
