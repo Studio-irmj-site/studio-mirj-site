@@ -43,3 +43,27 @@
 #reviewLoadMore{margin-top:18px}
 @media(max-width:700px){.review-client-card{padding:22px 18px}.review-admin-filters{grid-template-columns:1fr;gap:0}.review-admin-head{flex-direction:column;gap:8px}.review-state{margin-bottom:12px}.review-admin-card{padding:16px}.review-star-options{gap:6px}.review-star-options label{width:44px;min-height:48px}.review-star-options label span{font-size:30px}.review-link-actions>*{flex:1}}
 @media(min-width:781px) and (max-width:1100px){.site-header__inner{flex-wrap:wrap}.site-header .brand{margin-right:auto}.site-header .main-nav{order:3;width:100%;margin-left:0;justify-content:center}}
+
+/* Public, consented feedback on the O Espaço page. */
+.space-reviews{margin-top:36px;padding:28px;border:1px solid rgba(100,19,55,.1);border-radius:24px;background:#fbf7fc}
+.space-reviews-heading{display:flex;justify-content:space-between;align-items:center;gap:24px;margin-bottom:22px}
+.space-reviews-heading .section-kicker{margin:0 0 8px;color:var(--wine);font-size:12px;text-transform:uppercase;font-weight:700}
+.space-reviews h2{margin:0;color:var(--wine);font:500 clamp(26px,4vw,36px)/1.2 'Playfair Display',serif}
+.space-reviews-heading p{color:var(--muted);font-size:14px;line-height:1.6}
+.space-review-button{min-height:48px;flex-shrink:0;padding:12px 18px;border:1px solid var(--wine);border-radius:12px;background:var(--wine);color:#fff;cursor:pointer;font:700 14px 'DM Sans',sans-serif}
+.space-review-button:focus-visible{outline:3px solid var(--lilac);outline-offset:3px}
+.space-review-summary{display:flex;gap:16px;align-items:center;margin-bottom:20px;color:var(--wine)}
+.space-review-summary strong{font:600 34px 'Playfair Display',serif}.space-review-summary small{font:400 16px 'DM Sans',sans-serif;color:var(--muted)}
+.space-review-summary>span{font-size:14px;color:var(--muted)}
+.space-review-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-bottom:18px}
+.space-review-card{min-width:0;padding:20px;border:1px solid rgba(100,19,55,.09);border-radius:18px;background:#fff}
+.space-review-card-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.space-review-stars{color:#a17d34;font-size:23px;letter-spacing:2px}
+.space-review-card time,.space-review-card>small{color:var(--muted);font-size:12px}
+.space-review-comment{color:var(--ink);font-size:15px;line-height:1.7;white-space:pre-wrap;overflow-wrap:anywhere}
+.space-review-no-comment,.space-review-empty{color:var(--muted);font-size:14px;line-height:1.7}
+.review-client-card .review-public-consent{display:flex;align-items:flex-start;gap:10px;margin-top:20px}
+.review-public-consent input{flex:0 0 auto;width:20px;height:20px;margin:3px 0;accent-color:var(--wine)}
+.review-client-card .review-public-consent span{font-size:14px;line-height:1.6}
+@media(max-width:900px){.space-review-list{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:600px){.space-reviews{padding:20px 16px;margin-top:26px}.space-reviews-heading{flex-direction:column;align-items:stretch;gap:10px}.space-review-list{grid-template-columns:1fr}.space-review-card{padding:18px}.space-review-button{width:100%}}
