@@ -86,3 +86,6 @@
 .google-reviews-note{font-size:12px;color:var(--muted);line-height:1.6;margin:16px 0 24px}
 .site-reviews-heading{padding-top:24px;border-top:1px solid rgba(100,19,55,.12);margin:0 0 18px}
 @media(max-width:600px){.google-reviews-heading{flex-direction:column;align-items:stretch}.google-reviews-link{width:100%}}
+
+/* Google review action can also be rendered as a link. */
+.space-reviews-heading a.space-review-button{display:inline-flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;text-align:center}
