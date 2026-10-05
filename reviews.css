@@ -1,0 +1,45 @@
+
+/* Avaliações — estilos isolados, preservando as páginas existentes */
+.review-client-card{max-width:680px;margin:0 auto;padding:30px;background:#fff;border:1px solid var(--line);border-radius:22px;box-shadow:0 12px 35px #42102708}
+.review-client-card h2{margin:0 0 14px;color:var(--wine);font:500 clamp(26px,4vw,34px)/1.25 'Playfair Display',serif}
+.review-client-card p{color:var(--muted);line-height:1.65;font-size:16px}
+.review-client-card label{display:block;font-size:14px;font-weight:700;color:var(--wine);margin:16px 0 7px}
+.review-client-card label>span{font-weight:400;color:var(--muted)}
+.review-client-card input[type=text],.review-client-card textarea{width:100%;padding:13px;border:1px solid var(--line);border-radius:12px;font:inherit;font-size:16px;color:var(--ink);background:#fff}
+.review-client-card textarea{resize:vertical}
+.review-primary{display:block;width:100%;min-height:48px;margin-top:20px;padding:13px 18px;background:var(--wine);color:white;border:0;border-radius:12px;font:700 16px 'DM Sans',sans-serif;cursor:pointer}
+.review-primary:disabled{opacity:.65;cursor:wait}
+.review-service{padding:16px;border:1px solid var(--line);border-radius:14px;background:var(--rose-50,#f9f0ef)}
+.review-service strong,.review-service span{display:block}
+.review-service span{margin-top:6px;color:var(--muted);font-size:14px}
+.review-stars{padding:0;border:0;margin:26px 0 20px}
+.review-stars legend{font-size:16px;color:var(--wine);font-weight:700}
+.review-star-options{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+.review-star-options label{position:relative;display:grid;place-items:center;width:52px;min-height:52px;padding:4px;margin:0;border:1px solid var(--line);border-radius:12px;background:#fff;color:#ada1a6;cursor:pointer}
+.review-star-options input{position:absolute;inset:0;opacity:0;width:100%;height:100%;margin:0;cursor:pointer}
+.review-star-options label span{font-size:36px;line-height:1;color:inherit}
+.review-star-options label.filled{color:#a17d34;background:#fff8e9;border-color:#d7bd83}
+.review-star-options label:focus-within{outline:3px solid var(--gold);outline-offset:3px}
+.review-client-card .review-rating-label,.review-client-card .review-privacy{font-size:14px}
+.review-client-card .review-error{color:#a02b4e;font-size:14px}
+.review-error:empty{display:none}
+.review-confirmation{text-align:center;padding:20px 0}
+.review-confirmation__mark{display:grid;place-items:center;width:60px;height:60px;margin:0 auto 20px;border-radius:50%;background:#edf8f1;color:#267149;font-size:30px}
+.review-admin-list{display:grid;gap:16px}
+.review-admin-filters{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.review-admin-card{padding:20px;background:var(--surface,#fff);border:1px solid var(--line);border-radius:18px;min-width:0}
+.review-admin-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
+.review-admin-head strong{font-size:16px;color:var(--wine)}
+.review-admin-head p{margin:6px 0 14px;color:var(--muted);font-size:14px;line-height:1.6}
+.review-state{flex-shrink:0;font-size:12px;padding:6px 10px;background:var(--surface-soft,#f7edf1);color:var(--wine);border-radius:999px}
+.review-received-stars{color:#a17d34;font-size:24px;margin:0 0 12px}
+.review-feedback{white-space:pre-wrap;overflow-wrap:anywhere;font-size:16px;line-height:1.6;color:var(--ink)}
+.review-link-result{margin-top:14px}
+.review-link-result[hidden],.review-admin-card [hidden]{display:none!important}
+.review-generated-link{max-width:100%;font-size:14px!important}
+.review-link-actions{display:flex;gap:10px;flex-wrap:wrap}
+.review-link-actions .action{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:10px 14px;text-decoration:none;margin:0}
+.review-record-message{font-size:14px;color:var(--muted)}
+#reviewLoadMore{margin-top:18px}
+@media(max-width:700px){.review-client-card{padding:22px 18px}.review-admin-filters{grid-template-columns:1fr;gap:0}.review-admin-head{flex-direction:column;gap:8px}.review-state{margin-bottom:12px}.review-admin-card{padding:16px}.review-star-options{gap:6px}.review-star-options label{width:44px;min-height:48px}.review-star-options label span{font-size:30px}.review-link-actions>*{flex:1}}
+@media(min-width:781px) and (max-width:1100px){.site-header__inner{flex-wrap:wrap}.site-header .brand{margin-right:auto}.site-header .main-nav{order:3;width:100%;margin-left:0;justify-content:center}}
