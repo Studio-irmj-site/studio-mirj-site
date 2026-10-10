@@ -1,0 +1,102 @@
+/* Organização compacta do painel Espaço I.R */
+.ir-admin [hidden]{display:none!important}
+.ir-admin .panel main{padding:24px 28px}
+.ir-admin .panel header{margin-bottom:18px;padding-bottom:16px}
+.ir-admin .panel header h2{font-size:24px}
+.ir-admin .hero{padding:22px 24px;margin-bottom:16px;border-radius:18px}
+.ir-admin .hero h1{font-size:26px;margin:6px 0 8px}
+.ir-admin .hero p{margin:0;font-size:14px}
+.ir-admin .stats{gap:12px;margin-bottom:16px}
+.ir-admin .stat{padding:18px}
+.ir-admin .stat strong{font-size:26px;margin-top:8px}
+.ir-admin .card{padding:20px;margin-bottom:16px}
+.ir-admin .card h3{font-size:21px;margin:0 0 8px}
+.ir-admin .card p{line-height:1.5;margin:6px 0}
+.ir-admin .card-head{gap:12px;align-items:center;margin-bottom:16px}
+.ir-admin .card-head>.primary{width:auto;flex-shrink:0}
+.ir-admin .service{padding:14px;margin:8px 0;gap:10px}
+.ir-admin .service .empty{line-height:1.5}
+.ir-admin .ir-shortcuts{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.ir-admin .ir-shortcuts .action{margin:0;flex:1;white-space:nowrap}
+.ir-admin .ir-revenue-fold>summary,.ir-admin .ir-analysis-fold>summary{cursor:pointer;font-weight:700;min-height:44px;display:list-item;list-style-position:inside;color:var(--wine)}
+.ir-admin .ir-revenue-fold>summary{font-size:17px}
+.ir-admin .ir-revenue-fold[open]>summary{margin-bottom:18px}
+.ir-admin .ir-revenue-fold #revenueDetails .card{padding:16px;box-shadow:none}
+.ir-admin .finance-summary{grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.ir-admin .finance-summary .card{padding:14px}
+.ir-admin .finance-summary h3{font-family:'DM Sans',sans-serif;font-size:12px;color:var(--muted)}
+.ir-admin .finance-summary strong{font-size:18px;overflow-wrap:anywhere}
+.ir-admin .panel aside{padding:20px 14px;gap:0}
+.ir-admin .brand{padding:0 4px 18px}
+.ir-admin .nav{min-height:44px;padding:10px 12px;font-size:14px;opacity:.85;margin:2px 0;display:flex;align-items:center;gap:10px}
+.ir-admin .nav.active{opacity:1;background:#ffffff18}
+.ir-admin .nav-icon{width:20px;height:20px;flex-shrink:0}
+.ir-admin .ir-nav-group{margin:10px 0 0;padding-top:10px;border-top:1px solid #ffffff1c}
+.ir-admin .ir-nav-group>summary{cursor:pointer;min-height:40px;padding:10px 4px;color:#e8c4d4;font-size:12px;font-weight:700;letter-spacing:.03em;list-style-position:inside}
+.ir-admin .logout{margin-top:20px;min-height:44px}
+.ir-admin .ir-menu-close{display:none}
+.ir-admin .ir-workflow{padding:16px;background:var(--surface);border:1px solid var(--line);border-radius:18px;margin-bottom:16px}
+.ir-admin .ir-section-heading{display:flex;justify-content:space-between;gap:10px;margin-bottom:12px}
+.ir-admin .ir-section-heading strong{font-size:14px;color:var(--wine)}
+.ir-admin .ir-section-heading small{font-size:12px;color:var(--muted)}
+.ir-admin .ir-workflow nav{display:flex;flex-wrap:wrap;gap:6px}
+.ir-admin .ir-workflow nav button,.ir-admin .ir-steps button{padding:10px 12px;min-height:44px;border:1px solid var(--line);border-radius:10px;background:var(--surface-soft);color:var(--wine);font-size:13px}
+.ir-admin .ir-workflow nav button.selected,.ir-admin .ir-steps button.selected{background:var(--wine);border-color:var(--wine);color:white}
+.ir-admin .ir-route-help{margin:12px 0 0;font-size:13px;line-height:1.5;color:var(--muted)}
+.ir-admin .ir-pagination{display:flex;align-items:center;justify-content:space-between;gap:10px;padding-top:14px;border-top:1px solid var(--line);margin-top:12px}
+.ir-admin .ir-pagination span{font-size:13px;white-space:nowrap;color:var(--muted)}
+.ir-admin .ir-pagination button:disabled{opacity:.4;cursor:default}
+.ir-admin .ir-steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:18px 0}
+.ir-admin .ir-steps button{padding:10px 6px;line-height:1.4}
+.ir-admin .ir-wizard-actions{display:flex;gap:10px;margin:18px 0 10px}
+.ir-admin .ir-wizard-actions>.primary{flex:1}
+.ir-admin .ir-form-review{padding:14px;border:1px solid var(--line);border-radius:12px;background:var(--surface-soft);margin-bottom:14px}
+.ir-admin .ir-form-review p{font-size:13px;overflow-wrap:anywhere}
+.ir-admin .ir-list-filters{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:14px 0}
+.ir-admin .ir-list-filters label{margin:0;font-size:12px;color:var(--muted)}
+.ir-admin .ir-list-filters input,.ir-admin .ir-list-filters select{margin-top:5px;min-height:44px;width:100%}
+.ir-admin .av-intro h1{font-size:25px;margin:6px 0}
+.ir-admin .av-professional-agendas{margin:14px 0 10px;gap:8px}
+.ir-admin .av-professional-agendas button{min-height:44px;padding:10px 12px;font-size:14px}
+@media(max-width:700px){
+ .ir-admin .panel main{padding:16px 14px}
+ .ir-admin .panel header{padding-bottom:12px;margin-bottom:14px;gap:8px}
+ .ir-admin .panel header h2{font-size:19px;margin:3px 0}
+ .ir-admin .panel header a{padding:8px;font-size:11px}
+ .ir-admin .panel header .eyebrow{font-size:9px;letter-spacing:.08em}
+ .ir-admin .ir-header-brand>.ir-premium-logo{width:36px;height:36px}
+ .ir-admin .ir-header-brand{gap:8px}
+ .ir-admin .hero{padding:18px;margin-bottom:12px}
+ .ir-admin .hero h1{font-size:22px;line-height:1.25;margin:6px 0}
+ .ir-admin .hero p{font-size:12px;line-height:1.5}
+ .ir-admin .stats{gap:8px;margin-bottom:12px}
+ .ir-admin .stat{padding:14px;min-height:92px}
+ .ir-admin .stat span{font-size:12px;line-height:1.35}
+ .ir-admin .stat strong{font-size:22px;margin-top:8px}
+ .ir-admin .card{padding:16px;border-radius:16px}
+ .ir-admin .card h3{font-size:20px}
+ .ir-admin .card-head{flex-wrap:wrap;margin-bottom:12px}
+ .ir-admin .card-head>.primary{width:100%;padding:10px;font-size:13px}
+ .ir-admin .service{padding:12px;gap:8px}
+ .ir-admin .ir-shortcuts .action{font-size:12px;flex:1 1 130px}
+ .ir-admin .finance-summary{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+ .ir-admin .finance-summary .card{padding:10px;margin:0 0 12px}
+ .ir-admin .finance-summary h3{font-size:10px}
+ .ir-admin .finance-summary strong{font-size:14px}
+ .ir-admin .panel.av-menu-open aside{width:min(310px,87vw);padding:14px;max-height:100dvh}
+ .ir-admin .panel.av-menu-open .ir-menu-close{display:block;align-self:flex-end;background:#ffffff12;color:white;border:1px solid #ffffff24;border-radius:10px;padding:8px 12px;min-height:40px;margin-bottom:14px}
+ .ir-admin .panel.av-menu-open .nav{font-size:14px;padding:10px;min-height:44px}
+ .ir-admin .panel.av-menu-open .brand{padding-bottom:12px}
+ .ir-admin .ir-workflow{padding:14px}
+ .ir-admin .ir-section-heading{display:block}
+ .ir-admin .ir-section-heading small{display:block;margin-top:3px}
+ .ir-admin .ir-workflow nav{display:grid;grid-template-columns:1fr 1fr}
+ .ir-admin .ir-workflow nav button{font-size:12px;padding:9px 6px}
+ .ir-admin .ir-steps button{font-size:11px;min-height:54px}
+ .ir-admin .ir-list-filters{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+ .ir-admin .budget-meta{gap:5px}
+ .ir-admin .budget-item{padding:14px}
+ .ir-admin .av-intro p{font-size:13px}
+ .ir-admin .av-metrics{gap:6px}
+ .ir-admin .av-metric{padding:12px}
+}
