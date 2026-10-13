@@ -6,7 +6,7 @@ const path=require('node:path');
 const script=fs.readFileSync(path.resolve(__dirname,'../quote-register.js'),'utf8');
 const slots=[{available_date:'2026-10-10',available_time:'09:00:00',professional:'raquel'},{available_date:'2026-10-10',available_time:'09:00:00',professional:'iarytsa'},{available_date:'2026-10-10',available_time:'10:00:00',professional:'iarytsa'}];
 class Element {
- constructor(doc){this.doc=doc;this.events={};this.value='';this.hidden=false;this.disabled=false;this.children=[];this.textContent='';this.dataset={};}
+ constructor(doc){this.doc=doc;this.events={};this.value='';this.hidden=false;this.disabled=false;this.children=[];this.textContent='';this.dataset={};this.isConnected=true;}
  addEventListener(type,fn){this.events[type]=fn;}
  async fire(type){return this.events[type]?.({preventDefault(){},target:this});}
  set innerHTML(html){this.html=html;if(html.includes('<option')){this.options=[...html.matchAll(/<option value="([^"]*)">/g)].map(m=>m[1]);this.value=this.options[0]||'';}for(const m of html.matchAll(/id="([^"]+)"/g)){const el=this.doc.elements[m[1]]??=new Element(this.doc);if(m[1]==='requestReview')el.hidden=true;}}
@@ -15,12 +15,12 @@ class Element {
  querySelectorAll(){return [];}
  replaceChildren(){this.children=[];}
  append(el){this.children.push(el);}
- remove(){delete this.doc.elements[this.id];}
+ remove(){this.isConnected=false;delete this.doc.elements[this.id];}
  focus(){this.doc.activeElement=this;}
  getClientRects(){return this.hidden?[]:[{}];}
  getAttribute(){return '';}
 }
-async function setup(rows=slots,conflict=false,memory=new Map()){
+async function setup(rows=slots,conflict=false,memory=new Map(),promotions=null){
  const doc={elements:{},activeElement:null,querySelector(q){return this.elements[q.startsWith('#')?q.slice(1):q]||null;},createElement(){return new Element(this);}};
  doc.body=new Element(doc);doc.head=new Element(doc);
  const cta=doc.elements.ctaButton=new Element(doc);
@@ -29,11 +29,12 @@ async function setup(rows=slots,conflict=false,memory=new Map()){
  const fields=doc.elements['.request-grid']=new Element(doc);
  const calls=[],opened=[];
  const win={SUPABASE_CONFIG:{url:'https://test.invalid',anonKey:'test'},StudioProfessionals:require('../professionals.js'),open(url){opened.push(decodeURIComponent(url));return {};}};
+ if(promotions)win.IRPromotions=promotions;
  win.StudioCustomerContact=require('../customer-contact.js').create(()=>({getItem:key=>memory.get(key)||null,setItem:(key,value)=>memory.set(key,value),removeItem:key=>memory.delete(key)}));
  const context={window:win,document:doc,Intl,Date,console,fetch:async(url,options)=>url.endsWith('get_professional_available_slots')?{ok:true,json:async()=>rows}:{ok:!conflict,text:async()=> 'HORARIO_INDISPONIVEL',...calls.push(JSON.parse(options.body))}};
  vm.runInNewContext(script,context);await cta.fire('click');await new Promise(resolve=>setImmediate(resolve));
  const el=id=>doc.elements[id];if(!el('requestName').value){el('requestName').value='Cliente teste';el('requestPhone').value='11999999999';}
- const choose=async(id,value)=>{el(id).value=value;await el(id).fire('change');};
+ const choose=async(id,value)=>{el(id).value=value;await el(id).fire('change');await new Promise(resolve=>setImmediate(resolve));};
  const submit=()=>el('appointmentRequestForm').fire('submit');
  return {el,choose,submit,calls,opened,fields,memory};
 }
@@ -43,6 +44,14 @@ test('No write before review; any preference deduplicates slots and submits the 
  s.el('requestTime').value='10:00';s.el('requestNotes').value='<img src=x>';
  await s.submit();assert.equal(s.calls.length,0);assert.match(s.el('requestReview').innerHTML,/Iarytsa/);assert.match(s.el('requestReview').innerHTML,/&lt;img/);assert.doesNotMatch(s.el('requestReview').innerHTML,/<img/);
  await s.submit();assert.equal(s.calls.length,1);assert.equal(s.calls[0].p_professional,'iarytsa');assert.match(s.opened[0],/Aguardando confirmação/);
+});
+test('Promotion survives refresh, uses resolved professional and matches submitted and WhatsApp prices',async()=>{
+ const rules=require('../promotions-common.js'),day=rules.today();
+ const rows=[{available_date:day,available_time:'09:00:00',professional:'raquel'}];
+ const promos=[{id:'promo',service_id:'service-test',title:'Especial teste',price:35,start_date:day,end_date:day,professional:'raquel',active:true}];
+ const api={services:[{id:'service-test',price:50}],load:async()=>promos,price:(items,date,professional)=>rules.priced(items,promos,date,professional),labelDate:()=> ' ✦ Promoção'};
+ const s=await setup(rows,false,new Map(),api);await s.choose('requestProfessional','any');await s.choose('requestDate',day);await s.choose('requestTime','09:00');
+ assert.match(s.el('requestTotal').textContent,/35,00/);await s.submit();assert.match(s.el('requestReview').innerHTML,/Especial teste/);assert.equal(s.el('requestTime').value,'09:00');await s.submit();assert.equal(s.calls[0].p_items[0].unit_price,'35.00');assert.equal(s.calls[0].p_professional,'raquel');assert.match(s.opened[0],/Especial teste/);assert.match(s.opened[0],/35,00/);
 });
 test('Specific professional filters slots; changing preference clears date and time',async()=>{
  const s=await setup();await s.choose('requestProfessional','raquel');await s.choose('requestDate','2026-10-10');assert.deepEqual(s.el('requestTime').options,['','09:00']);

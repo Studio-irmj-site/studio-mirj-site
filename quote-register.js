@@ -63,16 +63,18 @@
     return response.json();
   }
 
-  function populateAvailability(rows, dateSelect, timeSelect) {
+  function populateAvailability(rows, dateSelect, timeSelect, items = [], professional = '') {
     const dates = [...new Set((rows || []).map((row) => row.available_date).filter(Boolean))].sort();
     const current = dateSelect.value;
-    dateSelect.innerHTML = `<option value="">A combinar</option>` + dates.map((date) => `<option value="${esc(date)}">${esc(dateLabel(date))}</option>`).join("");
+    const currentTime = timeSelect.value;
+    dateSelect.innerHTML = `<option value="">A combinar</option>` + dates.map((date) => `<option value="${esc(date)}">${esc(dateLabel(date))}${esc(window.IRPromotions?.labelDate(date,items,professional)||'')}</option>`).join("");
     if (dates.includes(current)) dateSelect.value = current;
 
     const times = [...new Set((rows || []).filter((row) => row.available_date === dateSelect.value).map(row => timeValue(row.available_time)))].sort();
     timeSelect.innerHTML = `<option value="">A combinar</option>` + times.map((t) => {
       return `<option value="${esc(t)}">${esc(t)}</option>`;
     }).join("");
+    if (times.includes(currentTime)) timeSelect.value = currentTime;
     timeSelect.disabled = !dateSelect.value;
   }
 
@@ -93,6 +95,7 @@
       `Serviços: ${servicesText(items)}`,
       `Profissional: ${professionalLabel(professional)}`,
       `Valor estimado: ${money(total(items))}`,
+      ...items.filter(item => item.promotion).map(item => `Promoção: ${item.promotion} — ${item.name}: ${money(item.price)} cada`),
       date ? `Data desejada: ${dateLabel(date)}` : "Data desejada: a combinar",
       time ? `Horário desejado: ${time}` : "Horário desejado: a combinar",
       notes ? `Observação: ${notes}` : "",
@@ -114,7 +117,7 @@
       body: JSON.stringify({
         p_client_name: name,
         p_client_phone: phone,
-        p_items: items.map(item => ({service_id:item.id,quantity:item.quantity})),
+        p_items: items.map(item => ({service_id:item.id,quantity:item.quantity,unit_price:Number(item.price).toFixed(2)})),
         p_professional: professional,
         p_available_date: date,
         p_available_time: `${time}:00`,
@@ -123,6 +126,7 @@
     });
     if (!response.ok) {
       const detail = await response.text().catch(() => "");
+      if (/PROMOCAO_ALTERADA/i.test(detail)) throw new Error("O valor desse serviço mudou. Confira o orçamento atualizado antes de enviar novamente.");
       if (/HORARIO_INDISPONIVEL/i.test(detail)) throw new Error("Esse horário acabou de ser reservado. Escolha outro ou deixe a combinar.");
       throw new Error("Não foi possível registrar o horário. Tente novamente ou deixe data e horário a combinar.");
     }
@@ -138,7 +142,7 @@
 
   function openRequestModal() {
     if (document.querySelector("#appointmentRequestModal")) return;
-    const items = selectedItems();
+    let items = selectedItems().map(item => ({...item,basePrice:item.price}));
     if (!items.length) {
       const href = cta.getAttribute("href");
       if (href) window.location.href = href;
@@ -263,17 +267,24 @@
 
     function refreshAvailability() {
       const rows = matchingSlots(availabilityRows, professionalSelect.value);
-      populateAvailability(rows, dateSelect, timeSelect);
+      populateAvailability(rows, dateSelect, timeSelect, items, professionalSelect.value);
       dateSelect.disabled = !professionalSelect.value;
       infoBox.textContent = !professionalSelect.value ? "Selecione a profissional para ver os horários." : !rows.length ? "Sem horários publicados para essa escolha. Você pode consultar pelo WhatsApp sem reservar um horário." : professionalSelect.value === "any" ? "A profissional disponível será indicada na revisão. O horário só será solicitado após você conferir." : "Selecione a data e o horário, ou deixe ambos a combinar.";
+      refreshItems();
     }
 
     function refreshItems() {
+      const promotions = window.IRPromotions;
+      if (promotions) {
+        items = items.map(item => ({...item,basePrice:Number(promotions.services.find(s=>s.id===item.id)?.price ?? item.basePrice)}));
+        const professional = resolveProfessional(availabilityRows,professionalSelect.value,dateSelect.value,timeSelect.value);
+        items = promotions.price(items,dateSelect.value,professional);
+      }
       itemsBox.replaceChildren();
       items.forEach((item, index) => {
         const row = document.createElement("div");
         row.className = "request-item";
-        row.innerHTML = `<div><strong>${esc(item.name)}</strong><small>${money(item.price)} cada · subtotal ${money(item.price * item.quantity)}</small></div><div class="request-item__controls"><button type="button" data-act="minus" data-i="${index}">−</button><span class="request-item__qty">${item.quantity}</span><button type="button" data-act="plus" data-i="${index}">+</button></div>`;
+        row.innerHTML = `<div><strong>${esc(item.name)}</strong><small>${money(item.price)} cada · subtotal ${money(item.price * item.quantity)}</small>${item.promotion?`<small class="request-promo-label">✦ ${esc(item.promotion)} · de ${money(item.basePrice)}</small>`:''}</div><div class="request-item__controls"><button type="button" data-act="minus" data-i="${index}">−</button><span class="request-item__qty">${item.quantity}</span><button type="button" data-act="plus" data-i="${index}">+</button></div>`;
         itemsBox.append(row);
       });
       totalBox.textContent = money(total(items));
@@ -289,7 +300,7 @@
       refreshItems();
     });
 
-    const close = () => { if (submit.disabled) return; modal.remove(); previousFocus?.focus(); };
+    const close = () => { if (submit.disabled) return; window.removeEventListener?.('ir-promotions-updated',promotionUpdate); modal.remove(); previousFocus?.focus(); };
     cancel.addEventListener("click", () => { if (submit.disabled) return; if (reviewedRequest) { editing(); professionalSelect.focus(); } else close(); });
     modal.addEventListener("click", (event) => { if (event.target === modal) close(); });
     modal.addEventListener("keydown", event => {
@@ -325,7 +336,10 @@
       availabilityRows = [];
       reloadAvailability();
     });
-    dateSelect.addEventListener("change", refreshAvailability);
+    dateSelect.addEventListener("change", () => { timeSelect.value = ''; refreshAvailability(); });
+    timeSelect.addEventListener("change", refreshItems);
+    const promotionUpdate = () => { if (modal.isConnected && !reviewedRequest) refreshAvailability(); };
+    window.addEventListener?.('ir-promotions-updated', promotionUpdate);
     refreshAvailability();
     reloadAvailability();
 
@@ -353,6 +367,14 @@
       if (!professional) { errorBox.textContent = "Escolha um horário disponível para essa profissional."; return; }
 
       if (!reviewedRequest) {
+        if (window.IRPromotions) {
+          submit.disabled = true;
+          fields.inert = true; itemsBox.inert = true;
+          try { await window.IRPromotions.load(); refreshItems(); }
+          catch (error) { errorBox.textContent = error.message; submit.disabled = false; return; }
+          finally { fields.inert = false; itemsBox.inert = false; }
+          submit.disabled = false;
+        }
         if (rememberInput.checked) {
           if (contactStore?.write({name, phone})) {
             savedContact = {name, phone};
@@ -366,6 +388,8 @@
         reviewedRequest = { name, phone, items: items.map(item => ({...item})), date, time, professional, notes };
         errorBox.textContent = "";
         const summary = [["Cliente", name], ["WhatsApp", phone], ["Serviços", servicesText(items)], ["Profissional", professionalLabel(professional)], ["Data e horário", date ? `${dateLabel(date)} às ${time}` : "A combinar — sem reserva de horário"], ["Valor estimado", money(total(items))]];
+        const applied = items.filter(item => item.promotion);
+        if (applied.length) summary.push(["Promoções aplicadas", applied.map(item => `${item.name}: ${money(item.price)} — ${item.promotion}`).join('; ')]);
         if (notes) summary.push(["Observação", notes]);
         reviewBox.innerHTML = `<h4>Confira sua solicitação</h4><dl>${summary.map(([label, value]) => `<dt>${esc(label)}</dt><dd>${esc(value)}</dd>`).join("")}</dl><p>${preference === "any" && date ? "Você escolheu sem preferência. A profissional indicada está disponível nesse horário. " : ""}O envio não confirma o atendimento: aguarde a aprovação do Espaço I.R.</p>`;
         fields.hidden = true;
@@ -389,6 +413,7 @@
         errorBox.textContent = error.message;
         submit.disabled = false;
         editing();
+        if (window.IRPromotions) window.IRPromotions.load().then(refreshItems).catch(()=>{});
         if (date) loadAvailability().then(rows => { availabilityRows = rows || []; refreshAvailability(); }).catch(() => {});
         return;
       }

@@ -6,7 +6,7 @@
   const navFor = key => aside.querySelector(key === 'requests' ? '[data-budget-nav]' : key === 'reviews' ? '[data-review-nav]' : '[data-view="' + key + '"]');
   const groups = [
     ['routine', 'Agenda e atendimento', [['requests', 'Pedidos do site'], ['appointments', 'Agendamentos'], ['availability', 'Horários disponíveis'], ['attendances', 'Serviços realizados']]],
-    ['business', 'Gestão do espaço', [['clients', 'Clientes'], ['services', 'Serviços'], ['finance', 'Financeiro'], ['reviews', 'Avaliações']]],
+    ['business', 'Gestão do espaço', [['clients', 'Clientes'], ['services', 'Serviços'], ['promotions', 'Promoções'], ['finance', 'Financeiro'], ['reviews', 'Avaliações']]],
     ['settings', 'Ajustes', [['settings', 'Configurações']]]
   ];
   function organizeMenu() {
