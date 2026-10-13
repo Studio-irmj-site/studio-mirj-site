@@ -166,12 +166,26 @@
               <div class="budget-actions">
                 ${request.request_status === "pendente" ? `<button class="budget-confirm" type="button" data-request-confirm="${esc(request.id)}">Confirmar</button><button class="budget-reject" type="button" data-request-reject="${esc(request.id)}">Recusar</button>` : ""}
                 ${request.request_status === "confirmado" && ["agendado", "confirmado"].includes(request.status) ? `<button class="budget-confirm" type="button" data-request-complete="${esc(request.id)}">Concluir atendimento</button>` : ""}
+                ${request.request_status === "confirmado" && ["agendado", "confirmado"].includes(request.status) ? `<button class="budget-filter" type="button" data-request-reschedule="${esc(request.id)}">Alterar horário</button>` : ""}
                 ${request.status === "concluido" ? `<button class="budget-confirm" type="button" data-request-receipt="${esc(request.id)}">Gerar recibo</button>` : ""}
                 ${request.client_phone ? `<a class="budget-whatsapp" href="${whatsappUrl(request.client_phone, confirmation)}" target="_blank" rel="noopener noreferrer">Abrir WhatsApp</a>` : ""}
               </div>
             </article>
           `;
         }).join("");
+
+        list.querySelectorAll("[data-request-reschedule]").forEach((button) => {
+          button.addEventListener("click", async () => {
+            if (button.disabled) return;
+            button.disabled = true;
+            try {
+              if (typeof window.changeAppointmentTime !== "function") throw new Error("Atualize o painel para carregar a alteração de horário.");
+              await window.changeAppointmentTime(button.dataset.requestReschedule);
+              await load(status);
+            } catch (error) { alert(error.message || "Não foi possível alterar o horário."); }
+            finally { button.disabled = false; }
+          });
+        });
 
         list.querySelectorAll("[data-request-complete]").forEach((button) => {
           button.addEventListener("click", async () => {
