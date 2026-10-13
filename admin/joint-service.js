@@ -1,0 +1,4 @@
+(()=>{'use strict';
+ function enhance(){const form=document.getElementById('appointmentForm'),service=document.getElementById('pService'),professional=document.getElementById('pProfessional');if(!form||!service||!professional||form.dataset.jointEnhanced)return;form.dataset.jointEnhanced='true';if(![...professional.options].some(o=>o.value==='both')){const o=document.createElement('option');o.value='both';o.textContent='Raquel e Iarytsa juntas';professional.append(o);}let forced=false;const sync=()=>{const joint=window.StudioProfessionals.requiresJoint([{name:service.selectedOptions[0]?.textContent}]);if(joint)professional.value='both';else if(forced)professional.value='';forced=joint;professional.disabled=joint;professional.title=joint?'Pé e Mão é realizado por Raquel e Iarytsa juntas.':'';};service.addEventListener('change',sync);sync();}
+ new MutationObserver(enhance).observe(document.getElementById('content'),{childList:true,subtree:true});enhance();
+})();

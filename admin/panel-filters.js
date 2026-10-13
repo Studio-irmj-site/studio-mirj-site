@@ -9,7 +9,8 @@
    else if(options.period==='today'&&day!==today)return false;
    else if(options.period==='upcoming'&&day<today)return false;
    if(options.professional==='shared'&&row.professional)return false;
-   if(['raquel','iarytsa'].includes(options.professional)&&row.professional&&row.professional!==options.professional)return false;
+   if(options.professional==='both'&&row.professional!=='both')return false;
+   if(['raquel','iarytsa'].includes(options.professional)&&row.professional&&row.professional!=='both'&&row.professional!==options.professional)return false;
    if(options.status==='active'&&!['agendado','confirmado'].includes(row.status))return false;
    if(['concluido','cancelado'].includes(options.status)&&row.status!==options.status)return false;
    return true;

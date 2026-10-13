@@ -201,6 +201,12 @@
     const itemsBox = modal.querySelector("#requestItems");
     const totalBox = modal.querySelector("#requestTotal");
     const professionalSelect = modal.querySelector("#requestProfessional");
+    const jointService = window.StudioProfessionals.requiresJoint(items);
+    if (jointService) {
+      professionalSelect.innerHTML = '<option value="both">Raquel e Iarytsa juntas</option>';
+      professionalSelect.value = 'both';
+      professionalSelect.disabled = true;
+    }
     const dateSelect = modal.querySelector("#requestDate");
     const timeSelect = modal.querySelector("#requestTime");
     const submit = modal.querySelector("#requestSubmit");
@@ -270,6 +276,7 @@
       populateAvailability(rows, dateSelect, timeSelect, items, professionalSelect.value);
       dateSelect.disabled = !professionalSelect.value;
       infoBox.textContent = !professionalSelect.value ? "Selecione a profissional para ver os horários." : !rows.length ? "Sem horários publicados para essa escolha. Você pode consultar pelo WhatsApp sem reservar um horário." : professionalSelect.value === "any" ? "A profissional disponível será indicada na revisão. O horário só será solicitado após você conferir." : "Selecione a data e o horário, ou deixe ambos a combinar.";
+      if (jointService) infoBox.textContent = rows.length ? 'Pé e Mão: Raquel e Iarytsa trabalharão juntas. São exibidos apenas horários livres nas duas agendas.' : 'Não há horários livres para Raquel e Iarytsa juntas. Consulte pelo WhatsApp sem reservar um horário.';
       refreshItems();
     }
 

@@ -1,9 +1,11 @@
 (function(root){'use strict';
 const values=['raquel','iarytsa'];
-const label=value=>value==='raquel'?'Raquel':value==='iarytsa'?'Iarytsa':'Sem profissional definida (horário compartilhado)';
+const label=value=>value==='raquel'?'Raquel':value==='iarytsa'?'Iarytsa':value==='both'?'Raquel e Iarytsa juntas':'Sem profissional definida (horário compartilhado)';
 const expand=value=>value==='both'?values:value&&values.includes(value)?[value]:[];
-const conflicts=(a,b)=>!a.professional||!b.professional||a.professional===b.professional;
-const visibleSlots=(rows,preference)=>(rows||[]).filter(row=>values.includes(row.professional)&&(preference==='any'||row.professional===preference));
-const resolveSlotProfessional=(rows,preference,date,time)=>{if(!date&&!time)return values.includes(preference)||preference==='any'?preference:'';if(!date||!time)return '';return visibleSlots(rows,preference).find(row=>row.available_date===date&&String(row.available_time).slice(0,5)===String(time).slice(0,5))?.professional||'';};
-const api={values,label,expand,conflicts,visibleSlots,resolveSlotProfessional};if(typeof module!=='undefined'&&module.exports)module.exports=api;else root.StudioProfessionals=api;
+const conflicts=(a,b)=>!a.professional||!b.professional||a.professional==='both'||b.professional==='both'||a.professional===b.professional;
+const normalize=v=>String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]/g,'');
+const requiresJoint=items=>{const names=(items||[]).map(x=>normalize(x.name));return names.some(n=>['peemao','pemao'].includes(n))||(names.includes('pe')&&names.includes('mao'));};
+const visibleSlots=(rows,preference)=>{if(preference!=='both')return(rows||[]).filter(row=>values.includes(row.professional)&&(preference==='any'||row.professional===preference));const groups=new Map();for(const row of rows||[]){if(!values.includes(row.professional))continue;const k=row.available_date+'|'+String(row.available_time).slice(0,5);if(!groups.has(k))groups.set(k,{row,professionals:new Set()});groups.get(k).professionals.add(row.professional);}return [...groups.values()].filter(g=>values.every(p=>g.professionals.has(p))).map(g=>({...g.row,professional:'both'}));};
+const resolveSlotProfessional=(rows,preference,date,time)=>{if(!date&&!time)return values.includes(preference)||preference==='any'||preference==='both'?preference:'';if(!date||!time)return '';return visibleSlots(rows,preference).find(row=>row.available_date===date&&String(row.available_time).slice(0,5)===String(time).slice(0,5))?.professional||'';};
+const api={values,label,expand,conflicts,visibleSlots,resolveSlotProfessional,requiresJoint};if(typeof module!=='undefined'&&module.exports)module.exports=api;else root.StudioProfessionals=api;
 })(typeof window!=='undefined'?window:globalThis);

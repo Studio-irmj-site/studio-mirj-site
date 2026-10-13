@@ -20,11 +20,11 @@ class Element {
  getClientRects(){return this.hidden?[]:[{}];}
  getAttribute(){return '';}
 }
-async function setup(rows=slots,conflict=false,memory=new Map(),promotions=null){
+async function setup(rows=slots,conflict=false,memory=new Map(),promotions=null,serviceName='Manicure'){
  const doc={elements:{},activeElement:null,querySelector(q){return this.elements[q.startsWith('#')?q.slice(1):q]||null;},createElement(){return new Element(this);}};
  doc.body=new Element(doc);doc.head=new Element(doc);
  const cta=doc.elements.ctaButton=new Element(doc);
- const card={dataset:{serviceId:'service-test'},querySelector:q=>({textContent:q.includes('copy')?'Manicure':'R$ 50,00'})};
+ const card={dataset:{serviceId:'service-test'},querySelector:q=>({textContent:q.includes('copy')?serviceName:'R$ 50,00'})};
  doc.querySelectorAll=()=>[card];
  const fields=doc.elements['.request-grid']=new Element(doc);
  const calls=[],opened=[];
@@ -44,6 +44,9 @@ test('No write before review; any preference deduplicates slots and submits the 
  s.el('requestTime').value='10:00';s.el('requestNotes').value='<img src=x>';
  await s.submit();assert.equal(s.calls.length,0);assert.match(s.el('requestReview').innerHTML,/Iarytsa/);assert.match(s.el('requestReview').innerHTML,/&lt;img/);assert.doesNotMatch(s.el('requestReview').innerHTML,/<img/);
  await s.submit();assert.equal(s.calls.length,1);assert.equal(s.calls[0].p_professional,'iarytsa');assert.match(s.opened[0],/Aguardando confirmação/);
+});
+test('Pé e Mão fixes both professionals and submits a single joint reservation only for simultaneous availability',async()=>{
+ const s=await setup(slots,false,new Map(),null,'Pé e Mão');assert.equal(s.el('requestProfessional').value,'both');assert.equal(s.el('requestProfessional').disabled,true);assert.doesNotMatch(s.el('requestProfessional').innerHTML,/Sem preferência/);await s.choose('requestDate','2026-10-10');assert.deepEqual(s.el('requestTime').options,['','09:00']);await s.choose('requestTime','09:00');await s.submit();assert.match(s.el('requestReview').innerHTML,/Raquel e Iarytsa juntas/);assert.equal(s.calls.length,0);await s.submit();assert.equal(s.calls.length,1);assert.equal(s.calls[0].p_professional,'both');assert.match(s.opened[0],/Raquel e Iarytsa juntas/);
 });
 test('Promotion survives refresh, uses resolved professional and matches submitted and WhatsApp prices',async()=>{
  const rules=require('../promotions-common.js'),day=rules.today();
