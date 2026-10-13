@@ -5,7 +5,38 @@
  async function load(){if(loading)return loading;loading=(async()=>{const data=await Promise.all([read('service_promotions?select=id,title,service_id,price,start_date,end_date,professional,active&order=start_date.asc'),read('services?select=id,name,price&active=eq.true')]);rows=data[0];services=data[1];ready=true;render();window.dispatchEvent(new Event('ir-promotions-updated'));return rows;})().finally(()=>loading=null);return loading;}
  function price(items,date,professional){return rules.priced(items,rows,date,professional);}
  function labelDate(d,items,professional){return rows.some(p=>items.some(i=>rules.match(p,i.id,d,professional==='any'?(p.professional||'raquel'):professional)&&Number(p.price)<Number(i.basePrice??i.price)))?' ✦ Promoção':'';}
- function render(){const eligible=rows.filter(p=>p.active&&p.end_date>=rules.today()&&services.some(s=>s.id===p.service_id&&Number(p.price)<Number(s.price)));document.querySelectorAll('[data-promotions]').forEach(host=>{host.hidden=!eligible.length;host.innerHTML=eligible.length?'<div class="ir-promo-heading"><span>DIAS ESPECIAIS</span><h2>Promoções do Espaço</h2></div><div class="ir-promo-grid">'+eligible.map(p=>{const s=services.find(x=>x.id===p.service_id);return '<article class="ir-promo-card"><span class="ir-promo-date">'+esc(p.start_date===p.end_date?date(p.start_date):date(p.start_date)+' a '+date(p.end_date))+'</span><h3>'+esc(p.title)+'</h3><p>'+esc(s.name)+' · '+(p.professional==='raquel'?'Raquel':p.professional==='iarytsa'?'Iarytsa':'Raquel e Iarytsa')+'</p><div><del>'+money(s.price)+'</del> <strong>'+money(p.price)+'</strong></div><small>Válido para atendimentos nas datas indicadas, conforme horários disponíveis.</small><button type="button" data-promo-service="'+esc(p.service_id)+'">Escolher serviço</button></article>';}).join('')+'</div>':'';host.querySelectorAll('[data-promo-service]').forEach(b=>b.onclick=()=>{window.IR_NAV?.openPage('servicos');const s=services.find(x=>x.id===b.dataset.promoService);if(s&&typeof window.activateCategory==='function')window.activateCategory('Todos');const card=document.querySelector('.service-card[data-service-id="'+b.dataset.promoService+'"]');if(card){if(card.getAttribute('aria-pressed')!=='true')card.click();card.scrollIntoView({behavior:'smooth',block:'center'});}});});}
+ const period=p=>p.start_date===p.end_date?date(p.start_date):date(p.start_date)+' a '+date(p.end_date);
+ const professional=p=>p.professional==='raquel'?'Raquel':p.professional==='iarytsa'?'Iarytsa':'Raquel e Iarytsa';
+ function promoCard(p,featured=false){
+  const s=services.find(x=>x.id===p.service_id);
+  if(featured)return '<article class="ir-promo-spotlight"><div class="ir-promo-spotlight__copy"><span class="ir-promo-spotlight__badge">✦ '+esc((p.start_date>rules.today()?'Em breve · ':'')+rules.highlightLabel(p))+'</span><span class="ir-promo-spotlight__dates">'+esc(period(p))+'</span><h2>'+esc(p.title)+'</h2><p>'+esc(s.name)+' <span>· '+professional(p)+'</span></p><small>Válido para atendimentos nas datas da promoção, conforme disponibilidade.</small></div><div class="ir-promo-spotlight__offer"><span class="ir-promo-spotlight__old">De <del>'+money(s.price)+'</del></span><strong>'+money(p.price)+'</strong><button type="button" data-promo-service="'+esc(p.service_id)+'" data-promo-book="true">Ver horários <span aria-hidden="true">↗</span></button></div></article>';
+  return '<article class="ir-promo-card"><span class="ir-promo-date">'+esc(period(p))+'</span><h3>'+esc(p.title)+'</h3><p>'+esc(s.name)+' · '+professional(p)+'</p><div><del>'+money(s.price)+'</del> <strong>'+money(p.price)+'</strong></div><small>Válido para atendimentos nas datas indicadas, conforme horários disponíveis.</small><button type="button" data-promo-service="'+esc(p.service_id)+'">Escolher serviço</button></article>';
+ }
+ async function selectPromoService(button){
+  if(button.disabled)return;button.disabled=true;
+  try{
+   window.IR_NAV?.openPage('servicos');
+   if(typeof window.activateCategory==='function')window.activateCategory('Todos');
+   const selector='.service-card[data-service-id="'+button.dataset.promoService+'"]';
+   let selected=document.querySelector(selector);
+   if(!selected&&typeof window.loadServices==='function'){await window.loadServices();selected=document.querySelector(selector);}
+   if(!selected)return;
+   if(selected.getAttribute('aria-pressed')!=='true')selected.click();
+   if(button.dataset.promoBook==='true')document.querySelector('#ctaButton')?.click();
+   else selected.scrollIntoView({behavior:'smooth',block:'center'});
+  }finally{button.disabled=false;}
+ }
+ function render(){
+  const eligible=rows.filter(p=>p.active&&p.end_date>=rules.today()&&services.some(s=>s.id===p.service_id&&Number(p.price)<Number(s.price)));
+  document.querySelectorAll('[data-promotions]').forEach(host=>{
+   host.hidden=!eligible.length;
+   if(host.hasAttribute('data-promotion-home')){
+    const main=rules.featured(eligible),rest=eligible.filter(p=>p.id!==main?.id);
+    host.innerHTML=main?promoCard(main,true)+(rest.length?'<details class="ir-promo-more"><summary>Mais '+rest.length+' '+(rest.length===1?'promoção':'promoções')+'</summary><div class="ir-promo-grid">'+rest.map(p=>promoCard(p)).join('')+'</div></details>':''):'';
+   }else host.innerHTML=eligible.length?'<div class="ir-promo-heading"><span>DIAS ESPECIAIS</span><h2>Promoções do Espaço</h2></div><div class="ir-promo-grid">'+eligible.map(p=>promoCard(p)).join('')+'</div>':'';
+   host.querySelectorAll('[data-promo-service]').forEach(button=>button.onclick=()=>selectPromoService(button));
+  });
+ }
  window.IRPromotions={load,price,labelDate,get ready(){return ready;},get services(){return services;}};
  load().catch(()=>{});setInterval(()=>{if(!document.hidden)load().catch(()=>{});},60000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)load().catch(()=>{});});
 })();
