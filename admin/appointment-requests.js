@@ -32,7 +32,9 @@
       .select("id,client_name,client_phone,service_name,amount,appointment_at,request_status,status,notes,created_at,updated_at,professional")
       .order("appointment_at", { ascending: true });
 
-    if (status !== "todos") query = query.eq("request_status", status);
+    if (status === "concluido") query = query.eq("status", "concluido").eq("request_status", "confirmado");
+    else if (status !== "todos") query = query.eq("request_status", status);
+    if (status === "confirmado") query = query.in("status", ["confirmado", "agendado"]);
     const { data, error } = await query;
     if (error) throw error;
     return data || [];
@@ -124,12 +126,13 @@
     content.innerHTML = `
       <div class="card">
         <div class="card-head">
-          <div><h3>Orçamentos e solicitações</h3><p>Pedidos enviados pelo site da cliente e aguardando ação do Studio.</p></div>
+          <div><h3>Pedidos do site</h3><p>Confirme a reserva e, após realizar o serviço, conclua o atendimento para registrar o pagamento e gerar o recibo.</p></div>
         </div>
         <div class="budget-toolbar">
           <div class="budget-filters" role="group" aria-label="Filtrar solicitações">
             <button class="budget-filter ${initialStatus === "pendente" ? "active" : ""}" data-budget-filter="pendente">Pendentes</button>
             <button class="budget-filter ${initialStatus === "confirmado" ? "active" : ""}" data-budget-filter="confirmado">Confirmados</button>
+            <button class="budget-filter ${initialStatus === "concluido" ? "active" : ""}" data-budget-filter="concluido">Concluídos</button>
             <button class="budget-filter ${initialStatus === "recusado" ? "active" : ""}" data-budget-filter="recusado">Recusados</button>
             <button class="budget-filter ${initialStatus === "todos" ? "active" : ""}" data-budget-filter="todos">Todos</button>
           </div>
@@ -159,14 +162,45 @@
                 <div class="budget-meta"><span>${esc(request.client_phone || "Sem WhatsApp")}</span><span>${esc(request.service_name || "Serviço não informado")}</span><span>${dateTime(request.appointment_at)}</span><span>${esc(window.StudioProfessionals.label(request.professional))}</span></div>
                 ${request.notes ? `<p class="budget-note">${esc(request.notes)}</p>` : ""}
               </div>
-              <div class="budget-value"><strong>${money(request.amount)}</strong><span class="budget-status">${esc(request.request_status || "pendente")}</span></div>
+              <div class="budget-value"><strong>${money(request.amount)}</strong><span class="budget-status">${esc(request.status === "concluido" ? "Concluído" : request.status === "cancelado" ? "Cancelado" : request.request_status || "pendente")}</span></div>
               <div class="budget-actions">
                 ${request.request_status === "pendente" ? `<button class="budget-confirm" type="button" data-request-confirm="${esc(request.id)}">Confirmar</button><button class="budget-reject" type="button" data-request-reject="${esc(request.id)}">Recusar</button>` : ""}
+                ${request.request_status === "confirmado" && ["agendado", "confirmado"].includes(request.status) ? `<button class="budget-confirm" type="button" data-request-complete="${esc(request.id)}">Concluir atendimento</button>` : ""}
+                ${request.status === "concluido" ? `<button class="budget-confirm" type="button" data-request-receipt="${esc(request.id)}">Gerar recibo</button>` : ""}
                 ${request.client_phone ? `<a class="budget-whatsapp" href="${whatsappUrl(request.client_phone, confirmation)}" target="_blank" rel="noopener noreferrer">Abrir WhatsApp</a>` : ""}
               </div>
             </article>
           `;
         }).join("");
+
+        list.querySelectorAll("[data-request-complete]").forEach((button) => {
+          button.addEventListener("click", async () => {
+            if (button.disabled) return;
+            button.disabled = true;
+            button.textContent = "Concluindo…";
+            try {
+              if (typeof window.completeAppointmentWithReceipt !== "function") throw new Error("Atualize o painel para carregar a conclusão de atendimento.");
+              await window.completeAppointmentWithReceipt(button.dataset.requestComplete);
+              await load(status);
+              await refreshBadge();
+            } catch (error) {
+              alert(error.message || "Não foi possível concluir o atendimento.");
+              button.disabled = false;
+              button.textContent = "Concluir atendimento";
+            }
+          });
+        });
+        list.querySelectorAll("[data-request-receipt]").forEach((button) => {
+          button.addEventListener("click", async () => {
+            if (button.disabled) return;
+            button.disabled = true;
+            try {
+              if (typeof window.generateAppointmentReceipt !== "function") throw new Error("Atualize o painel para carregar os recibos.");
+              await window.generateAppointmentReceipt(button.dataset.requestReceipt);
+            } catch (error) { alert(error.message || "Não foi possível gerar o recibo."); }
+            finally { button.disabled = false; }
+          });
+        });
 
         list.querySelectorAll("[data-request-confirm]").forEach((button) => {
           button.addEventListener("click", async () => {
