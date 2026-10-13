@@ -1,0 +1,8 @@
+/* Receipt delivery controls stay in the administrative panel, including on iPhone. */
+.ir-admin .receipt-delivery-actions{display:grid;gap:10px;margin-top:18px}
+.ir-admin .receipt-delivery-actions button{width:100%;min-height:48px;white-space:normal;line-height:1.4}
+.ir-admin .receipt-modal .receipt-delivery-note{font-size:12px;line-height:1.6;color:var(--muted)}
+.ir-admin .receipt-modal #receiptShareStatus{font-size:14px;line-height:1.6;overflow-wrap:anywhere}
+.ir-admin .receipt-modal #receiptShareStatus:empty{display:none}
+.ir-admin .receipt-modal .expense-dialog{max-height:calc(100dvh - 24px);overflow-y:auto;overscroll-behavior:contain}
+@media(max-width:700px){.ir-admin .receipt-modal .expense-dialog{padding-bottom:max(20px,env(safe-area-inset-bottom))}}

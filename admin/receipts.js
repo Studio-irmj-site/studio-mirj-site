@@ -83,7 +83,10 @@
     pdf.setDrawColor(232,218,225); pdf.line(20,268,190,268);
     pdf.setTextColor(...wine); pdf.setFont('times','italic'); pdf.setFontSize(11); pdf.text('Obrigada pela preferência.',105,278,{align:'center'});
     pdf.setFont('helvetica','normal'); pdf.setFontSize(8); pdf.setTextColor(...muted); pdf.text(`Emitido em ${new Date().toLocaleString('pt-BR')}`,105,285,{align:'center'});
-    pdf.save(`recibo-studio-ir-${filePart(appointment.client_name)}-${new Date(appointment.appointment_at).toLocaleDateString('en-CA')}.pdf`);
+    const filename = `recibo-studio-ir-${filePart(appointment.client_name)}-${new Date(appointment.appointment_at).toLocaleDateString('en-CA')}.pdf`;
+    const blob = pdf.output('blob');
+    const file = typeof File === 'function' ? new File([blob], filename, {type:'application/pdf'}) : null;
+    return {pdf,filename,file};
   }
 
   function phoneNumber(phone) {
@@ -92,23 +95,63 @@
     return digits;
   }
 
-  function successModal(appointment, payment) {
+  function successModal(appointment, payment, receipt) {
     closeModal();
     const phone = phoneNumber(appointment.client_phone);
-    const message = `Olá, ${appointment.client_name}! Seu atendimento no Studio I.R foi concluído. Segue o recibo no valor de ${money(appointment.amount)}, pago via ${payment}. Por favor, anexe nesta conversa o PDF que acabou de ser baixado.`;
+    const message = `Olá, ${appointment.client_name}! Segue o recibo do seu atendimento no Espaço I.R, no valor de ${money(appointment.amount)}, pago via ${payment}.`;
     const modal = document.createElement('div');
     modal.className = 'expense-modal receipt-modal';
-    modal.innerHTML = `<div class="expense-modal-backdrop"></div><div class="expense-dialog expense-confirm" role="dialog" aria-modal="true"><p class="eyebrow">RECIBO GERADO</p><h3>PDF baixado com sucesso</h3><p>${phone ? 'Agora abra o WhatsApp e anexe o arquivo PDF baixado à mensagem preparada.' : 'O PDF foi baixado. Cadastre o telefone da cliente para enviá-lo pelo WhatsApp.'}</p><div class="receipt-summary"><strong>${esc(appointment.client_name)}</strong><span>${esc(payment)} · ${money(appointment.amount)}</span></div><div class="expense-form-actions"><button type="button" class="action" id="receiptDone">Fechar</button>${phone ? '<button type="button" class="primary expense-save receipt-whatsapp" id="receiptWhatsApp">Abrir WhatsApp</button>' : ''}</div></div>`;
-    document.body.appendChild(modal); document.body.classList.add('modal-open');
+    modal.innerHTML = `<div class="expense-modal-backdrop"></div><div class="expense-dialog expense-confirm" role="dialog" aria-modal="true" aria-labelledby="receiptReadyTitle"><button class="expense-close" type="button" aria-label="Fechar">×</button><p class="eyebrow">RECIBO GERADO</p><h3 id="receiptReadyTitle">Recibo pronto para enviar</h3><p>Toque em “Enviar/compartilhar PDF”, escolha o WhatsApp e selecione a conversa da cliente. O arquivo será anexado pelo menu de compartilhamento do celular.</p><div class="receipt-summary"><strong>${esc(appointment.client_name)}</strong><span>${esc(payment)} · ${money(appointment.amount)}</span></div><p id="receiptShareStatus" class="form-feedback" role="status" aria-live="polite"></p><div class="receipt-delivery-actions"><button type="button" class="primary" id="receiptShare">Enviar/compartilhar PDF</button><button type="button" class="action" id="receiptDownload">Baixar PDF</button>${phone ? '<button type="button" class="action receipt-whatsapp" id="receiptWhatsApp">Abrir conversa no WhatsApp</button>' : ''}<button type="button" class="action" id="receiptDone">Fechar</button></div><p class="receipt-delivery-note">Se o compartilhamento não estiver disponível, baixe o PDF e anexe-o no WhatsApp. “Abrir conversa” prepara a mensagem, mas não anexa o arquivo.</p></div>`;
+    document.body.appendChild(modal);
+    document.body.classList.add('modal-open');
+    const status = modal.querySelector('#receiptShareStatus');
+    const shareButton = modal.querySelector('#receiptShare');
+    const downloadButton = modal.querySelector('#receiptDownload');
+    let canShareFile = false;
+    try {
+      canShareFile = !!(receipt.file && navigator.share && navigator.canShare && navigator.canShare({files:[receipt.file]}));
+    } catch { /* Unsupported file sharing keeps the download option available. */ }
+    if (!canShareFile) status.textContent = 'Este navegador não oferece envio direto de PDF. Toque em “Baixar PDF” e anexe o arquivo no WhatsApp.';
+    shareButton.onclick = async () => {
+      if (shareButton.disabled) return;
+      if (!canShareFile) {
+        status.textContent = 'Para enviar: toque em “Baixar PDF”, salve em Arquivos e anexe o documento no WhatsApp da cliente.';
+        downloadButton.focus();
+        return;
+      }
+      shareButton.disabled = true;
+      status.textContent = '';
+      try {
+        // The file is already prepared: call share directly from this user click.
+        await navigator.share({files:[receipt.file],title:'Recibo Espaço I.R'});
+        status.textContent = 'Compartilhamento concluído. Confira a conversa escolhida no aplicativo.';
+      } catch (error) {
+        status.textContent = error.name === 'AbortError'
+          ? 'Compartilhamento cancelado. O recibo continua disponível para enviar ou baixar.'
+          : 'Não foi possível compartilhar neste navegador. Toque em “Baixar PDF” e anexe o arquivo no WhatsApp.';
+      } finally {
+        shareButton.disabled = false;
+      }
+    };
+    downloadButton.onclick = () => {
+      try {
+        receipt.pdf.save(receipt.filename);
+        status.textContent = 'PDF aberto para baixar. No iPhone, use Compartilhar → Salvar em Arquivos. Depois anexe o PDF no WhatsApp.';
+      } catch {
+        status.textContent = 'Não foi possível baixar o PDF. Tente novamente ou use “Enviar/compartilhar PDF”.';
+      }
+    };
     modal.querySelector('#receiptDone').onclick = closeModal;
+    modal.querySelector('.expense-close').onclick = closeModal;
     modal.querySelector('.expense-modal-backdrop').onclick = closeModal;
     if (phone) modal.querySelector('#receiptWhatsApp').onclick = () => window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`,'_blank','noopener');
+    shareButton.focus();
   }
 
   async function generate(appointment, payment) {
     const {data} = await db.from('studio_settings').select('studio_name,tagline,address,city').eq('id',1).maybeSingle();
-    createPdf(appointment,payment,data || {studio_name:'Studio I.R',tagline:'Nail Designer'});
-    successModal(appointment,payment);
+    const receipt = createPdf(appointment,payment,data || {studio_name:'Espaço I.R',tagline:'Nail Designer'});
+    successModal(appointment,payment,receipt);
   }
 
   window.completeAppointmentWithReceipt = async id => {
