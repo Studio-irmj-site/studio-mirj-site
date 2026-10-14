@@ -20,3 +20,17 @@
  .ir-admin .ir-agenda-row .status{grid-column:1/-1}
  .ir-admin .ir-agenda-row .ir-agenda-actions{grid-column:1/-1}
 }
+
+/* Slot controls must fit their grid cell, including blocked-state labels. */
+.ir-admin .ir-calendar-layout .av-slot{min-width:0;align-content:start}
+.ir-admin .ir-calendar-layout .av-slot__head{flex-wrap:wrap;min-width:0}
+.ir-admin .ir-calendar-layout .av-slot__state{max-width:100%;overflow-wrap:anywhere}
+.ir-admin .ir-calendar-layout .av-slot__professional{margin:0;overflow-wrap:anywhere}
+.ir-admin .ir-calendar-layout .av-slot__actions{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,100px),1fr));gap:8px;min-width:0}
+.ir-admin .ir-calendar-layout .av-slot__actions button{width:100%;min-width:0;margin:0;padding:10px 8px;white-space:normal;overflow-wrap:anywhere;min-height:44px}
+@media(max-width:600px){
+ .ir-admin .ir-calendar-layout .av-slot-grid{grid-template-columns:minmax(0,1fr)}
+ .ir-admin .ir-calendar-layout .av-slot{padding:14px;gap:10px}
+ .ir-admin .ir-calendar-layout .av-slot__time{font-size:22px}
+ .ir-admin .ir-calendar-layout .av-day__tools button{max-width:100%;white-space:normal}
+}
