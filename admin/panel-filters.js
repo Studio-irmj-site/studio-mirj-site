@@ -3,7 +3,10 @@
  const dateKey=value=>{const d=new Date(value);return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-');};
  function appointments(rows,options={},now=new Date()){
   const today=dateKey(now);
+  const normalize=value=>String(value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase('pt-BR');
+  const search=normalize(options.search).trim();
   return rows.filter(row=>{
+   if(search&&!normalize([row.client_name,row.service_name,row.client_phone].join(' ')).includes(search))return false;
    const day=dateKey(row.appointment_at);
    if(options.date){if(day!==options.date)return false;}
    else if(options.period==='today'&&day!==today)return false;

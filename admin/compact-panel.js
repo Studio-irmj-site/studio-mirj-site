@@ -5,7 +5,7 @@
   if (!content || !aside) return;
   const navFor = key => aside.querySelector(key === 'requests' ? '[data-budget-nav]' : key === 'reviews' ? '[data-review-nav]' : '[data-view="' + key + '"]');
   const groups = [
-    ['routine', 'Agenda e atendimento', [['requests', 'Pedidos do site'], ['appointments', 'Agendamentos'], ['availability', 'Horários disponíveis'], ['attendances', 'Serviços realizados']]],
+    ['routine', 'Agenda e atendimento', [['requests', 'Pedidos do site'], ['appointments', 'Agenda'], ['availability', 'Horários disponíveis'], ['attendances', 'Serviços realizados']]],
     ['business', 'Gestão do espaço', [['clients', 'Clientes'], ['services', 'Serviços'], ['promotions', 'Promoções'], ['finance', 'Financeiro'], ['reviews', 'Avaliações']]],
     ['settings', 'Ajustes', [['settings', 'Configurações']]]
   ];
@@ -44,7 +44,7 @@
     if (!['requests', 'appointments', 'availability', 'attendances'].includes(route) || isForm) { rail?.remove(); return; }
     if (!rail) {
       rail = document.createElement('section'); rail.id = 'irWorkflow'; rail.className = 'ir-workflow';
-      rail.innerHTML = '<div class="ir-section-heading"><strong>Agenda e atendimento</strong><small>Escolha o que deseja gerenciar</small></div><nav aria-label="Etapas da agenda">' + [['requests','1 · Pedidos'],['appointments','2 · Agendamentos'],['attendances','3 · Realizados'],['availability','Horários livres']].map(([key,label]) => '<button type="button" data-ir-route="' + key + '">' + label + '</button>').join('') + '</nav><p class="ir-route-help"></p>';
+      rail.innerHTML = '<div class="ir-section-heading"><strong>Agenda e atendimento</strong><small>Escolha o que deseja gerenciar</small></div><nav aria-label="Etapas da agenda">' + [['requests','1 · Pedidos'],['appointments','2 · Agenda'],['attendances','3 · Realizados'],['availability','Horários livres']].map(([key,label]) => '<button type="button" data-ir-route="' + key + '">' + label + '</button>').join('') + '</nav><p class="ir-route-help"></p>';
       content.before(rail); rail.querySelectorAll('button').forEach(button => button.onclick = () => go(button.dataset.irRoute));
     }
     rail.querySelectorAll('button').forEach(button => { const selected = button.dataset.irRoute === route; button.classList.toggle('selected', selected); button.setAttribute('aria-current', selected ? 'page' : 'false'); });
